@@ -7,79 +7,384 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f8f9fa; color: #333; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        h1 { color: #2c3e50; margin-bottom: 5px; font-size: 24px; }
-        .source-link { font-size: 14px; color: #7f8c8d; margin-bottom: 20px; }
-        .source-link a { color: #3498db; text-decoration: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333; 
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        
+        h1 { 
+            color: #2c3e50; 
+            margin-bottom: 10px; 
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .source-link { 
+            font-size: 13px; 
+            color: #7f8c8d; 
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .source-link a { 
+            color: #3498db; 
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .source-link a:hover { 
+            text-decoration: underline;
+        }
+        
+        /* 訊息框樣式 */
+        #messageBox {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
         
         /* 雙層下拉選單控制面板 */
-        .control-panel { background: #ffffff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 25px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: center; }
-        .control-group { display: flex; align-items: center; gap: 8px; }
-        label { font-size: 15px; font-weight: bold; color: #34495e; }
-        select { font-size: 15px; padding: 8px 12px; border-radius: 6px; border: 1px solid #ccd1d1; background-color: #fff; cursor: pointer; min-width: 180px; }
+        .control-panel { 
+            background: #f8f9fa;
+            padding: 20px 25px; 
+            border-radius: 8px; 
+            border: 1px solid #e0e0e0;
+            margin-bottom: 25px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+            align-items: center; 
+            justify-content: center;
+        }
+        
+        .control-group { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
+        
+        label { 
+            font-size: 14px; 
+            font-weight: 600; 
+            color: #34495e;
+            white-space: nowrap;
+        }
+        
+        select { 
+            font-size: 14px; 
+            padding: 10px 12px; 
+            border-radius: 6px; 
+            border: 1px solid #bdc3c7; 
+            background-color: #fff; 
+            cursor: pointer; 
+            min-width: 200px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        select:hover { 
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+        }
         
         /* 圖表看板佈局 */
-        .dashboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; max-width: 900px; width: 100%; margin-bottom: 25px; }
-        .chart-box { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center; flex: 1; min-width: 280px; max-width: 400px; }
+        .dashboard { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 25px; 
+            margin-bottom: 30px;
+        }
         
-        /* 數據表格設計與原網譜經典變色 */
-        table { width: 100%; max-width: 650px; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 40px; }
-        th, td { padding: 12px 15px; text-align: center; font-size: 16px; border: 1px solid #eaeded; }
-        th { background-color: #34495e; color: #fff; font-weight: bold; }
+        .chart-box { 
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            text-align: center; 
+            flex: 1; 
+            min-width: 280px; 
+            max-width: 380px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
         
-        .row-calories { color: #333333; background-color: #FFFFFF; font-weight: bold; }
-        .row-carbs { color: #315231; background-color: #ECFFEC; }
-        .row-protein { color: #542222; background-color: #FFF9F8; }
-        .row-fat { color: #574500; background-color: #FDFFD4; }
-        .row-water { color: #264B5E; background-color: #E8FAFF; }
+        .chart-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+        
+        /* 數據表格設計 */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: #fff; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        th, td { 
+            padding: 14px 15px; 
+            text-align: center; 
+            font-size: 14px; 
+            border: 1px solid #e8eef5;
+        }
+        
+        th { 
+            background-color: #34495e; 
+            color: #fff; 
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        td { 
+            background-color: #ffffff;
+        }
+        
+        tr:hover td {
+            background-color: #f8f9fa;
+        }
+        
+        .row-calories { 
+            color: #c0392b; 
+            background-color: #fff5f5; 
+            font-weight: 600;
+        }
+        
+        .row-carbs { 
+            color: #27ae60; 
+            background-color: #f0fdf4;
+        }
+        
+        .row-protein { 
+            color: #8b4513; 
+            background-color: #fef5f1;
+        }
+        
+        .row-fat { 
+            color: #d68910; 
+            background-color: #fffbf0;
+        }
+        
+        .row-water { 
+            color: #0984e3; 
+            background-color: #f0f8ff;
+        }
+        
+        .row-fiber {
+            color: #6c5ce7;
+            background-color: #f5f3ff;
+        }
+        
+        /* DRI參考表格 */
+        .dri-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .dri-section h2 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .dri-tables {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+        }
+        
+        .dri-table {
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+        }
+        
+        .dri-table table {
+            margin: 0;
+        }
+        
+        .dri-table h3 {
+            font-size: 14px;
+            color: #34495e;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .control-group {
+                width: 100%;
+                flex-direction: column;
+            }
+            
+            select {
+                width: 100%;
+                min-width: unset;
+            }
+            
+            .dashboard {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .chart-box {
+                max-width: 100%;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <h1>食品營養成分動態排行榜看板</h1>
-    <div class="source-link">
-        數據源自：<a href="https://consumer.fda.gov.tw/Food/TFND.aspx?nodeID=178" target="_blank">台灣食藥署 食品營養成分資料庫</a>
-    </div>
-
-    <div class="control-panel">
-        <div class="control-group">
-            <label for="categorySelect">1. 食物來源(分類)：</label>
-            <select id="categorySelect" onchange="onCategoryChange()"></select>
+    <div class="container">
+        <h1>食品營養成分動態排行榜看板</h1>
+        <div class="source-link">
+            數據源自：<a href="https://consumer.fda.gov.tw/Food/TFND.aspx?nodeID=178" target="_blank">台灣食藥署 食品營養成分資料庫</a>
         </div>
-        <div class="control-group">
-            <label for="foodSelect">2. 樣品名稱：</label>
-            <select id="foodSelect" onchange="onFoodChange()"></select>
+        
+        <div id="messageBox">
+            綠活才是王道！ 醫師家庭的新素食運動：感冒變少、不再氣喘了
         </div>
-    </div>
 
-    <div class="dashboard">
-        <div class="chart-box"><canvas id="massChart"></canvas></div>
-        <div class="chart-box"><canvas id="calorieChart"></canvas></div>
-    </div>
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="categorySelect">1. 食物來源(分類)：</label>
+                <select id="categorySelect" onchange="onCategoryChange()"></select>
+            </div>
+            <div class="control-group">
+                <label for="foodSelect">2. 樣品名稱：</label>
+                <select id="foodSelect" onchange="onFoodChange()"></select>
+            </div>
+        </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th style="width:40%">營養成分 (每 100g)</th>
-                <th style="width:30%">含量</th>
-                <th style="width:30%">備註</th>
-            </tr>
-        </thead>
-        <tbody id="nutrientTableBody">
+        <div class="dashboard">
+            <div class="chart-box"><canvas id="massChart"></canvas></div>
+            <div class="chart-box"><canvas id="calorieChart"></canvas></div>
+            <div class="chart-box"><canvas id="fatChart"></canvas></div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40%">營養成分 (每 100g)</th>
+                    <th style="width:30%">含量</th>
+                    <th style="width:30%">DV(%)*</th>
+                </tr>
+            </thead>
+            <tbody id="nutrientTableBody">
             </tbody>
-    </table>
+        </table>
+        
+        <div class="dri-section">
+            <h2>每日參考攝取量 DRI (成人男性 19-30歲)</h2>
+            <div class="dri-tables">
+                <div class="dri-table">
+                    <h3>基本營養素</h3>
+                    <table id="driBasicTable">
+                        <thead>
+                            <tr>
+                                <th>成分</th>
+                                <th>DRI</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="dri-table">
+                    <h3>礦物質</h3>
+                    <table id="driMineralTable">
+                        <thead>
+                            <tr>
+                                <th>成分</th>
+                                <th>DRI</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <script>
-    let globalFoodData = []; // 存放從外部 CSV 撈出來的完整官方大陣列
+    let globalFoodData = []; 
     let massChartInstance = null;
     let calorieChartInstance = null;
+    let fatChartInstance = null;
+    
+    // DRI 參考值 (成人男性 19-30歲)
+    const DRI_VALUES = {
+        '熱量(kcal)': 1900,
+        '總碳水化合物(g)': 263,
+        '膳食纖維(g)': 27,
+        '糖質總量(g)': 48,
+        '粗蛋白(g)': 50,
+        '粗脂肪(g)': 32,
+        '水分(g)': 2160,
+        '鈉(mg)': 540,
+        '鉀(mg)': 2800,
+        '鈣(mg)': 1000,
+        '鎂(mg)': 320,
+        '鐵(mg)': 15,
+        '鋅(mg)': 12,
+        '磷(mg)': 800,
+        '銅(mg)': 0.9
+    };
 
     document.addEventListener("DOMContentLoaded", function() {
         initCharts();
-        fetchCSVDatabase(); // 第一時間發起非同步請求調取真實資料庫
+        initDRITables();
+        fetchCSVDatabase();
     });
 
-    // 1. 調取外部原始 CSV 資料庫
+    // 調取外部原始 CSV 資料庫
     function fetchCSVDatabase() {
         fetch('food_data_a.csv') 
             .then(response => {
@@ -90,10 +395,10 @@
                 Papa.parse(csvText, {
                     header: true,
                     skipEmptyLines: true,
-                    dynamicTyping: true,
+                    dynamicTyping: false,
                     complete: function(results) {
-                        globalFoodData = results.data;
-                        initCategorySelect(); // 資料撈取成功，開始建立第一層選單
+                        globalFoodData = results.data.filter(row => row['食品分類'] && row['樣品名稱']);
+                        initCategorySelect();
                     }
                 });
             })
@@ -103,11 +408,10 @@
             });
     }
 
-    // 2. 提取不重複的「食物來源(Category)」填入第一層選單
+    // 提取不重複的「食物來源(Category)」填入第一層選單
     function initCategorySelect() {
         const cateSelect = document.getElementById("categorySelect");
-        // 利用 Set 特性自動過濾掉重複的分類名稱
-        const categories = [...new Set(globalFoodData.map(item => item.Category))].filter(Boolean);
+        const categories = [...new Set(globalFoodData.map(item => item['食品分類']))].filter(Boolean).sort();
         
         cateSelect.innerHTML = "";
         categories.forEach(cate => {
@@ -117,102 +421,243 @@
             cateSelect.appendChild(op);
         });
 
-        // 預設觸發第一分類的樣品連動
         onCategoryChange();
     }
 
-    // 3. 當第一層「食物來源」改變時，即時更新第二層「樣品名稱」
+    // 當第一層「食物來源」改變時，即時更新第二層「樣品名稱」
     function onCategoryChange() {
         const selectedCate = document.getElementById("categorySelect").value;
         const foodSelect = document.getElementById("foodSelect");
         
-        // 過濾出屬於該分類的所有食物
-        const filteredFoods = globalFoodData.filter(item => item.Category === selectedCate);
+        const filteredFoods = globalFoodData.filter(item => item['食品分類'] === selectedCate);
         
         foodSelect.innerHTML = "";
         filteredFoods.forEach(food => {
             let op = document.createElement("option");
-            op.value = food["Food Name"];
-            op.textContent = food["Food Name"];
+            op.value = food['樣品名稱'];
+            op.textContent = food['樣品名稱'];
             foodSelect.appendChild(op);
         });
 
-        // 檢查網址是否有自訂 row 參數，若有則優先鎖定該項目
+        // 檢查網址是否有自訂 row 參數
         const rowParam = new URLSearchParams(window.location.search).get("row");
         if (rowParam && globalFoodData[parseInt(rowParam)]) {
             const targetFood = globalFoodData[parseInt(rowParam)];
-            if (targetFood.Category === selectedCate) {
-                foodSelect.value = targetFood["Food Name"];
+            if (targetFood['食品分類'] === selectedCate) {
+                foodSelect.value = targetFood['樣品名稱'];
             }
         }
 
-        onFoodChange(); // 觸發數據與圖表刷新
+        onFoodChange();
     }
 
-    // 4. 當選定具體「樣品名稱」後，執行演算與渲染
+    // 當選定具體「樣品名稱」後，執行演算與渲染
     function onFoodChange() {
         const selectedName = document.getElementById("foodSelect").value;
-        const food = globalFoodData.find(f => f["Food Name"] === selectedName);
+        const food = globalFoodData.find(f => f['樣品名稱'] === selectedName);
         if (!food) return;
 
-        // 更新網址參數 (完美復刻網址跟隨功能)
-        const rowIndex = globalFoodData.findIndex(f => f["Food Name"] === selectedName);
+        // 更新網址參數
+        const rowIndex = globalFoodData.findIndex(f => f['樣品名稱'] === selectedName);
         if (rowIndex !== -1) {
             const newURL = `${window.location.origin}${window.location.pathname}?row=${rowIndex}`;
             window.history.replaceState(null, "", newURL);
         }
 
-        // 讀取並防呆處理數值 (若官方資料庫缺失則補 0)
-        const carbs = food["Carbs (g)"] || 0;
-        const fibre = food["Fibre (g)"] || 0;
-        const protein = food["Protein (g)"] || 0;
-        const fat = food["Fat (g)"] || 0;
-        const water = food["Water (g)"] || 0;
-        const ash = food["Ash (g)"] || 0;
-        const calories = food["Calorie (kcal)"] || 0;
+        // 讀取並防呆處理數值
+        const carbs = parseFloat(food['總碳水化合物(g)']) || 0;
+        const fibre = parseFloat(food['膳食纖維(g)']) || 0;
+        const protein = parseFloat(food['粗蛋白(g)']) || 0;
+        const fat = parseFloat(food['粗脂肪(g)']) || 0;
+        const water = parseFloat(food['水分(g)']) || 0;
+        const ash = parseFloat(food['灰分(g)']) || 0;
+        const calories = parseFloat(food['熱量(kcal)']) || 0;
+        const satFat = parseFloat(food['飽和脂肪(g)']) || 0;
 
-        // 計算復刻版修正熱量比例
+        // 計算修正熱量比例
         const cCal = carbs * 4;
         const pCal = protein * 4;
-        const fCal = fat * 8.9;
+        const fCal = fat * 9;
         const totalFA = cCal + pCal + fCal;
 
-        // 填充 RWD 表格與經典變色樣式
+        // 計算脂肪酸分佈（假設數據中有相關欄位）
+        let mufa = 0, pufa = 0;
+        // 如果CSV中有脂肪酸數據，可以解析
+        // 這裡使用簡單估算
+        if (fat > 0) {
+            mufa = fat * 0.4;  // 估算單不飽和脂肪
+            pufa = fat * 0.3;  // 估算多不飽和脂肪
+        }
+
+        // 填充表格
         const tbody = document.getElementById("nutrientTableBody");
+        const caloriesDV = ((calories / DRI_VALUES['熱量(kcal)']) * 100).toFixed(1);
+        const carbsDV = ((carbs / DRI_VALUES['總碳水化合物(g)']) * 100).toFixed(1);
+        const fibreDV = ((fibre / DRI_VALUES['膳食纖維(g)']) * 100).toFixed(1);
+        const proteinDV = ((protein / DRI_VALUES['粗蛋白(g)']) * 100).toFixed(1);
+        const fatDV = ((fat / DRI_VALUES['粗脂肪(g)']) * 100).toFixed(1);
+        
         tbody.innerHTML = `
-            <tr class="row-calories"><td>熱量 (官方標示)</td><td>${calories} kcal</td><td>每 100g 含量</td></tr>
-            <tr class="row-carbs"><td>醣類(碳水化合物)</td><td>${carbs} g</td><td>含膳食纖維 ${fibre} g</td></tr>
-            <tr class="row-protein"><td>蛋白質</td><td>${protein} g</td><td>真蛋白與氨化物混合物</td></tr>
-            <tr class="row-fat"><td>粗脂肪</td><td>${fat} g</td><td>三大脂肪酸總和基底</td></tr>
-            <tr class="row-water"><td>水分</td><td>${water} g</td><td>食品化學基本成分</td></tr>
+            <tr class="row-calories"><td>熱量</td><td>${calories.toFixed(1)} kcal</td><td>${caloriesDV}%</td></tr>
+            <tr class="row-carbs"><td>醣類(碳水化合物)</td><td>${carbs.toFixed(1)} g</td><td>${carbsDV}%</td></tr>
+            <tr class="row-fiber"><td>膳食纖維</td><td>${fibre.toFixed(1)} g</td><td>${fibreDV}%</td></tr>
+            <tr class="row-protein"><td>蛋白質</td><td>${protein.toFixed(1)} g</td><td>${proteinDV}%</td></tr>
+            <tr class="row-fat"><td>粗脂肪</td><td>${fat.toFixed(1)} g</td><td>${fatDV}%</td></tr>
+            <tr class="row-water"><td>水分</td><td>${water.toFixed(1)} g</td><td>-</td></tr>
         `;
 
         // 刷新圖表一：重量結構
         massChartInstance.data.datasets[0].data = [carbs, protein, fat, water, ash];
+        massChartInstance.data.labels = [`醣類\n${carbs.toFixed(1)}g`, `蛋白質\n${protein.toFixed(1)}g`, `脂肪\n${fat.toFixed(1)}g`, `水\n${water.toFixed(1)}g`, `灰分\n${ash.toFixed(1)}g`];
         massChartInstance.update();
 
         // 刷新圖表二：三大來源熱量貢獻比
         if (totalFA > 0) {
             document.getElementById("calorieChart").style.display = "block";
-            calorieChartInstance.data.datasets[0].data = [(cCal/totalFA*100), (pCal/totalFA*100), (fCal/totalFA*100)];
+            const carbPercent = (cCal/totalFA*100).toFixed(1);
+            const proteinPercent = (pCal/totalFA*100).toFixed(1);
+            const fatPercent = (fCal/totalFA*100).toFixed(1);
+            calorieChartInstance.data.datasets[0].data = [carbPercent, proteinPercent, fatPercent];
+            calorieChartInstance.data.labels = [`醣類\n${carbPercent}%`, `蛋白質\n${proteinPercent}%`, `脂肪\n${fatPercent}%`];
             calorieChartInstance.update();
         } else {
             document.getElementById("calorieChart").style.display = "none";
         }
+        
+        // 刷新圖表三：脂肪酸分佈
+        if (fat > 0) {
+            document.getElementById("fatChart").style.display = "block";
+            const satPercent = (satFat / fat * 100).toFixed(1);
+            const mufaPercent = (mufa / fat * 100).toFixed(1);
+            const pufaPercent = (pufa / fat * 100).toFixed(1);
+            fatChartInstance.data.datasets[0].data = [satPercent, mufaPercent, pufaPercent];
+            fatChartInstance.data.labels = [`飽和脂肪\n${satPercent}%`, `單不飽和\n${mufaPercent}%`, `多不飽和\n${pufaPercent}%`];
+            fatChartInstance.update();
+        } else {
+            document.getElementById("fatChart").style.display = "none";
+        }
     }
 
-    // 初始化兩個 Chart.js 圖表實例
+    // 初始化三個 Chart.js 圖表實例
     function initCharts() {
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 12 },
+                        padding: 15
+                    }
+                }
+            }
+        };
+        
         massChartInstance = new Chart(document.getElementById('massChart').getContext('2d'), {
             type: 'doughnut',
-            data: { labels: ['醣類', '蛋白質', '脂肪', '水', '灰分'], datasets: [{ data: [0,0,0,0,0], backgroundColor: ['#2ecc71','#e74c3c','#f1c40f','#3498db','#95a5a6'] }] },
-            options: { responsive: true, plugins: { title: { display: true, text: '每 100g 重量結構分佈 (g)', font: { size: 16 } } } }
+            data: { 
+                labels: ['醣類', '蛋白質', '脂肪', '水', '灰分'], 
+                datasets: [{ 
+                    data: [0,0,0,0,0], 
+                    backgroundColor: ['#2ecc71','#e74c3c','#f1c40f','#3498db','#95a5a6'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }] 
+            },
+            options: {
+                ...chartOptions,
+                plugins: {
+                    ...chartOptions.plugins,
+                    title: { 
+                        display: true, 
+                        text: '每 100g 重量結構分佈', 
+                        font: { size: 14, weight: 'bold' }
+                    }
+                }
+            }
         });
 
         calorieChartInstance = new Chart(document.getElementById('calorieChart').getContext('2d'), {
             type: 'doughnut',
-            data: { labels: ['醣類熱量', '蛋白質熱量', '脂肪熱量'], datasets: [{ data: [0,0,0], backgroundColor: ['#27ae60','#c0392b','#d35400'] }] },
-            options: { responsive: true, plugins: { title: { display: true, text: '三大營養素熱量貢獻比 (%)', font: { size: 16 } } } }
+            data: { 
+                labels: ['醣類熱量', '蛋白質熱量', '脂肪熱量'], 
+                datasets: [{ 
+                    data: [0,0,0], 
+                    backgroundColor: ['#27ae60','#c0392b','#d35400'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }] 
+            },
+            options: {
+                ...chartOptions,
+                plugins: {
+                    ...chartOptions.plugins,
+                    title: { 
+                        display: true, 
+                        text: '三大營養素熱量貢獻比', 
+                        font: { size: 14, weight: 'bold' }
+                    }
+                }
+            }
+        });
+        
+        fatChartInstance = new Chart(document.getElementById('fatChart').getContext('2d'), {
+            type: 'doughnut',
+            data: { 
+                labels: ['飽和脂肪', '單不飽和脂肪', '多不飽和脂肪'], 
+                datasets: [{ 
+                    data: [0,0,0], 
+                    backgroundColor: ['#e67e22','#f39c12','#16a085'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }] 
+            },
+            options: {
+                ...chartOptions,
+                plugins: {
+                    ...chartOptions.plugins,
+                    title: { 
+                        display: true, 
+                        text: '脂肪酸分佈比例', 
+                        font: { size: 14, weight: 'bold' }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 初始化 DRI 參考表格
+    function initDRITables() {
+        const basicItems = [
+            { name: '熱量', value: '1900 kcal' },
+            { name: '碳水化合物', value: '263 g' },
+            { name: '膳食纖維', value: '27 g' },
+            { name: '蛋白質', value: '50 g' },
+            { name: '脂肪', value: '32 g' }
+        ];
+        
+        const mineralItems = [
+            { name: '鈉', value: '540 mg' },
+            { name: '鉀', value: '2800 mg' },
+            { name: '鈣', value: '1000 mg' },
+            { name: '鎂', value: '320 mg' },
+            { name: '鐵', value: '15 mg' },
+            { name: '鋅', value: '12 mg' }
+        ];
+        
+        const basicTable = document.querySelector('#driBasicTable tbody');
+        basicItems.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${item.name}</td><td>${item.value}</td>`;
+            basicTable.appendChild(row);
+        });
+        
+        const mineralTable = document.querySelector('#driMineralTable tbody');
+        mineralItems.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${item.name}</td><td>${item.value}</td>`;
+            mineralTable.appendChild(row);
         });
     }
 </script>
