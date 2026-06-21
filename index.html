@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食品營養成分動態排行榜看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f8f9fa; color: #333; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: #2c3e50; margin-bottom: 5px; font-size: 24px; }
+        .source-link { font-size: 14px; color: #7f8c8d; margin-bottom: 20px; }
+        .source-link a { color: #3498db; text-decoration: none; }
+        
+        /* 雙層下拉選單控制面板 */
+        .control-panel { background: #ffffff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 25px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: center; }
+        .control-group { display: flex; align-items: center; gap: 8px; }
+        label { font-size: 15px; font-weight: bold; color: #34495e; }
+        select { font-size: 15px; padding: 8px 12px; border-radius: 6px; border: 1px solid #ccd1d1; background-color: #fff; cursor: pointer; min-width: 180px; }
+        
+        /* 圖表看板佈局 */
+        .dashboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; max-width: 900px; width: 100%; margin-bottom: 25px; }
+        .chart-box { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center; flex: 1; min-width: 280px; max-width: 400px; }
+        
+        /* 數據表格設計與原網譜經典變色 */
+        table { width: 100%; max-width: 650px; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 40px; }
+        th, td { padding: 12px 15px; text-align: center; font-size: 16px; border: 1px solid #eaeded; }
+        th { background-color: #34495e; color: #fff; font-weight: bold; }
+        
+        .row-calories { color: #333333; background-color: #FFFFFF; font-weight: bold; }
+        .row-carbs { color: #315231; background-color: #ECFFEC; }
+        .row-protein { color: #542222; background-color: #FFF9F8; }
+        .row-fat { color: #574500; background-color: #FDFFD4; }
+        .row-water { color: #264B5E; background-color: #E8FAFF; }
+    </style>
+</head>
+<body>
+
+    <h1>食品營養成分動態排行榜看板</h1>
+    <div class="source-link">
+        數據源自：<a href="https://consumer.fda.gov.tw/Food/TFND.aspx?nodeID=178" target="_blank">台灣食藥署 食品營養成分資料庫</a>
+    </div>
+
+    <div class="control-panel">
+        <div class="control-group">
+            <label for="categorySelect">1. 食物來源(分類)：</label>
+            <select id="categorySelect" onchange="onCategoryChange()"></select>
+        </div>
+        <div class="control-group">
+            <label for="foodSelect">2. 樣品名稱：</label>
+            <select id="foodSelect" onchange="onFoodChange()"></select>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="chart-box"><canvas id="massChart"></canvas></div>
+        <div class="chart-box"><canvas id="calorieChart"></canvas></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:40%">營養成分 (每 100g)</th>
+                <th style="width:30%">含量</th>
+                <th style="width:30%">備註</th>
+            </tr>
+        </thead>
+        <tbody id="nutrientTableBody">
+            </tbody>
+    </table>
+
+<script>
+    let globalFoodData = []; // 存放從外部 CSV 撈出來的完整官方大陣列
+    let massChartInstance = null;
+    let calorieChartInstance = null;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        initCharts();
+        fetchCSVDatabase(); // 第一時間發起非同步請求調取真實資料庫
+    });
+
+    // 1. 調取外部原始 CSV 資料庫
+    function fetchCSVDatabase() {
+        fetch('food_data_a.csv') 
+            .then(response => {
+                if (!response.ok) throw new Error("未偵測到資料庫檔案 food_data_a.csv，請確認檔案位置。");
+                return response.text();
+            })
+            .then(csvText => {
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        globalFoodData = results.data;
+                        initCategorySelect(); // 資料撈取成功，開始建立第一層選單
+                    }
+                });
+            })
+            .catch(error => {
+                console.error("資料庫讀取失敗:", error);
+                document.getElementById("categorySelect").innerHTML = `<option>${error.message}</option>`;
+            });
+    }
+
+    // 2. 提取不重複的「食物來源(Category)」填入第一層選單
+    function initCategorySelect() {
+        const cateSelect = document.getElementById("categorySelect");
+        // 利用 Set 特性自動過濾掉重複的分類名稱
+        const categories = [...new Set(globalFoodData.map(item => item.Category))].filter(Boolean);
+        
+        cateSelect.innerHTML = "";
+        categories.forEach(cate => {
+            let op = document.createElement("option");
+            op.value = cate;
+            op.textContent = cate;
+            cateSelect.appendChild(op);
+        });
+
+        // 預設觸發第一分類的樣品連動
+        onCategoryChange();
+    }
+
+    // 3. 當第一層「食物來源」改變時，即時更新第二層「樣品名稱」
+    function onCategoryChange() {
+        const selectedCate = document.getElementById("categorySelect").value;
+        const foodSelect = document.getElementById("foodSelect");
+        
+        // 過濾出屬於該分類的所有食物
+        const filteredFoods = globalFoodData.filter(item => item.Category === selectedCate);
+        
+        foodSelect.innerHTML = "";
+        filteredFoods.forEach(food => {
+            let op = document.createElement("option");
+            op.value = food["Food Name"];
+            op.textContent = food["Food Name"];
+            foodSelect.appendChild(op);
+        });
+
+        // 檢查網址是否有自訂 row 參數，若有則優先鎖定該項目
+        const rowParam = new URLSearchParams(window.location.search).get("row");
+        if (rowParam && globalFoodData[parseInt(rowParam)]) {
+            const targetFood = globalFoodData[parseInt(rowParam)];
+            if (targetFood.Category === selectedCate) {
+                foodSelect.value = targetFood["Food Name"];
+            }
+        }
+
+        onFoodChange(); // 觸發數據與圖表刷新
+    }
+
+    // 4. 當選定具體「樣品名稱」後，執行演算與渲染
+    function onFoodChange() {
+        const selectedName = document.getElementById("foodSelect").value;
+        const food = globalFoodData.find(f => f["Food Name"] === selectedName);
+        if (!food) return;
+
+        // 更新網址參數 (完美復刻網址跟隨功能)
+        const rowIndex = globalFoodData.findIndex(f => f["Food Name"] === selectedName);
+        if (rowIndex !== -1) {
+            const newURL = `${window.location.origin}${window.location.pathname}?row=${rowIndex}`;
+            window.history.replaceState(null, "", newURL);
+        }
+
+        // 讀取並防呆處理數值 (若官方資料庫缺失則補 0)
+        const carbs = food["Carbs (g)"] || 0;
+        const fibre = food["Fibre (g)"] || 0;
+        const protein = food["Protein (g)"] || 0;
+        const fat = food["Fat (g)"] || 0;
+        const water = food["Water (g)"] || 0;
+        const ash = food["Ash (g)"] || 0;
+        const calories = food["Calorie (kcal)"] || 0;
+
+        // 計算復刻版修正熱量比例
+        const cCal = carbs * 4;
+        const pCal = protein * 4;
+        const fCal = fat * 8.9;
+        const totalFA = cCal + pCal + fCal;
+
+        // 填充 RWD 表格與經典變色樣式
+        const tbody = document.getElementById("nutrientTableBody");
+        tbody.innerHTML = `
+            <tr class="row-calories"><td>熱量 (官方標示)</td><td>${calories} kcal</td><td>每 100g 含量</td></tr>
+            <tr class="row-carbs"><td>醣類(碳水化合物)</td><td>${carbs} g</td><td>含膳食纖維 ${fibre} g</td></tr>
+            <tr class="row-protein"><td>蛋白質</td><td>${protein} g</td><td>真蛋白與氨化物混合物</td></tr>
+            <tr class="row-fat"><td>粗脂肪</td><td>${fat} g</td><td>三大脂肪酸總和基底</td></tr>
+            <tr class="row-water"><td>水分</td><td>${water} g</td><td>食品化學基本成分</td></tr>
+        `;
+
+        // 刷新圖表一：重量結構
+        massChartInstance.data.datasets[0].data = [carbs, protein, fat, water, ash];
+        massChartInstance.update();
+
+        // 刷新圖表二：三大來源熱量貢獻比
+        if (totalFA > 0) {
+            document.getElementById("calorieChart").style.display = "block";
+            calorieChartInstance.data.datasets[0].data = [(cCal/totalFA*100), (pCal/totalFA*100), (fCal/totalFA*100)];
+            calorieChartInstance.update();
+        } else {
+            document.getElementById("calorieChart").style.display = "none";
+        }
+    }
+
+    // 初始化兩個 Chart.js 圖表實例
+    function initCharts() {
+        massChartInstance = new Chart(document.getElementById('massChart').getContext('2d'), {
+            type: 'doughnut',
+            data: { labels: ['醣類', '蛋白質', '脂肪', '水', '灰分'], datasets: [{ data: [0,0,0,0,0], backgroundColor: ['#2ecc71','#e74c3c','#f1c40f','#3498db','#95a5a6'] }] },
+            options: { responsive: true, plugins: { title: { display: true, text: '每 100g 重量結構分佈 (g)', font: { size: 16 } } } }
+        });
+
+        calorieChartInstance = new Chart(document.getElementById('calorieChart').getContext('2d'), {
+            type: 'doughnut',
+            data: { labels: ['醣類熱量', '蛋白質熱量', '脂肪熱量'], datasets: [{ data: [0,0,0], backgroundColor: ['#27ae60','#c0392b','#d35400'] }] },
+            options: { responsive: true, plugins: { title: { display: true, text: '三大營養素熱量貢獻比 (%)', font: { size: 16 } } } }
+        });
+    }
+</script>
+</body>
+</html>
