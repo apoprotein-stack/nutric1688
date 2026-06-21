@@ -80,14 +80,49 @@
             font-weight: 400;
             margin-top: 1px;
         }
-        .header-badge {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 500;
+        /* ===== HEADER TAB NAV ===== */
+        .header-tabs {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .header-tab {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.65);
+            cursor: pointer;
+            border: 2px solid transparent;
+            background: transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .header-tab:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.12);
+        }
+        .header-tab.active {
+            color: #fff;
+            background: rgba(255,255,255,0.18);
+            border-color: rgba(255,255,255,0.5);
+        }
+        .header-tab .tab-icon { font-size: 16px; }
+        .header-tab .tab-badge {
+            font-size: 10px;
+            background: rgba(255,255,255,0.25);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header-tab.active .tab-badge {
+            background: var(--brand-gold);
+            color: var(--brand-green);
         }
 
         /* ===== LAYOUT ===== */
@@ -99,6 +134,10 @@
 
         /* ===== MESSAGE TICKER (hidden) ===== */
         #messageBox { display: none !important; }
+
+        /* ===== TAB PANELS ===== */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
 
         /* ===== HERO DIVIDER ===== */
         .hero-divider {
@@ -445,7 +484,18 @@
             <div class="brand-sub">食品營養成分查詢平台</div>
         </div>
     </a>
-    <span class="header-badge">🇹🇼 2024版 U1</span>
+    <nav class="header-tabs">
+        <button class="header-tab active" onclick="switchTab('unit1', this)">
+            <span class="tab-icon">🌿</span>
+            <span>食品營養成分</span>
+            <span class="tab-badge">U1</span>
+        </button>
+        <button class="header-tab" onclick="switchTab('unit2', this)">
+            <span class="tab-icon">📝</span>
+            <span>每日參考攝取量</span>
+            <span class="tab-badge">U2</span>
+        </button>
+    </nav>
 </header>
 
 <!-- ===== HIDDEN MESSAGE BOX (JS still needs these IDs) ===== -->
@@ -457,15 +507,8 @@
 <!-- ===== MAIN CONTENT ===== -->
 <div class="page-wrapper">
 
-    <!-- UNIT 1 HERO -->
-    <div class="hero-divider">
-        <div class="hero-text">
-            <div class="hero-label">Unit 1</div>
-            <div class="hero-title">🌿 食品營養成分</div>
-            <div class="hero-sub">選擇食品，查看每 100g 的完整營養資訊與 DV% 比較</div>
-        </div>
-        <div class="hero-icon">📊</div>
-    </div>
+    <!-- ===== UNIT 1 PANEL ===== -->
+    <div id="panel-unit1" class="tab-panel active">
 
     <!-- Food Selector Card -->
     <div class="selector-card">
@@ -558,17 +601,12 @@
         <div id="aminoAcidChartContainer">
             <canvas id="aminoAcidBarChart" class="nutrientBarCanvas"></canvas>
         </div>
-    </div>
+    </div><!-- /.bar-section -->
 
-    <!-- UNIT 2 HERO -->
-    <div class="hero-divider">
-        <div class="hero-text">
-            <div class="hero-label">Unit 2</div>
-            <div class="hero-title">📝 每日參考攝取量 DRI</div>
-            <div class="hero-sub">依性別年齡選擇對應的 DRI 標準值（含上限 UL）</div>
-        </div>
-        <div class="hero-icon">🧑‍👩‍👧‍👦</div>
-    </div>
+    </div><!-- /#panel-unit1 -->
+
+    <!-- ===== UNIT 2 PANEL ===== -->
+    <div id="panel-unit2" class="tab-panel">
 
     <!-- DRI Section -->
     <div class="dri-section">
@@ -626,7 +664,9 @@
         <tr><td>反式脂肪</td><td id="transfatUL"></td>
         <tr><td>膽固醇</td><td id="cholesterolUL"></td>        
         </table>
-    </div>
+    </div><!-- /.dri-section -->
+
+    </div><!-- /#panel-unit2 -->
 
 </div><!-- /.page-wrapper -->
 
@@ -638,6 +678,26 @@
 </footer>
 
     <script>
+
+        // ===== TAB SWITCHING =====
+        function switchTab(tabId, btn) {
+            // Hide all panels
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            // Deactivate all tab buttons
+            document.querySelectorAll('.header-tab').forEach(b => b.classList.remove('active'));
+            // Show selected panel
+            document.getElementById('panel-' + tabId).classList.add('active');
+            // Activate clicked button
+            btn.classList.add('active');
+            // If switching to unit1, trigger chart resize
+            if (tabId === 'unit1') {
+                setTimeout(() => {
+                    if (window.calorieChart) window.calorieChart.resize();
+                    if (window.fatChart) window.fatChart.resize();
+                    if (window.massChart) window.massChart.resize();
+                }, 50);
+            }
+        }
 
         let driReady = false;
 
