@@ -3,256 +3,500 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>營養成分表</title>
+    <title>TZ-NutriQ Web — 食品營養成分查詢</title>
+    <link rel="icon" href="logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
+        :root {
+            --brand-green: #2D6A4F;
+            --brand-green-light: #40916C;
+            --brand-green-pale: #D8F3DC;
+            --brand-gold: #F4A261;
+            --brand-gold-light: #FFDDD2;
+            --bg-main: #F7FAF8;
+            --bg-card: #FFFFFF;
+            --text-primary: #1B2D27;
+            --text-secondary: #5A7268;
+            --text-muted: #8FA89F;
+            --border: #D4E6DC;
+            --shadow: 0 2px 12px rgba(45,106,79,0.10);
+            --shadow-lg: 0 6px 30px rgba(45,106,79,0.15);
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Noto Sans TC', 'Inter', Arial, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
         
-        /* ✅ Message Box - Scrolls with Page */
-        #messageBox {
-            width: 90%;  /* ✅ Prevents full-width stretching */
-            max-width: 600px;  /* ✅ Limits width to prevent too much spacing */
-            background-color: #f2feff;  /* ✅ Light blue background */
-            color: #83898a;  /* ✅ Gray text */
-            text-align: center;
-            padding: 4px 10px;
-            font-size: 16px;
-            font-weight: bold;
+        /* ===== HEADER ===== */
+        .site-header {
+            background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-light) 100%);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 68px;
+            box-shadow: 0 2px 16px rgba(45,106,79,0.25);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .site-header .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+        .site-header .logo-img {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: white;
+            padding: 3px;
+            object-fit: contain;
+        }
+        .site-header .brand-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: 0.5px;
+        }
+        .site-header .brand-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.75);
+            font-weight: 400;
+            margin-top: 1px;
+        }
+        .header-badge {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        /* ===== LAYOUT ===== */
+        .page-wrapper {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+
+        /* ===== MESSAGE TICKER (hidden) ===== */
+        #messageBox { display: none !important; }
+
+        /* ===== HERO DIVIDER ===== */
+        .hero-divider {
+            background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-light) 60%, #52B788 100%);
+            border-radius: var(--radius);
+            padding: 36px 32px;
+            margin: 32px 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-divider::before {
+            content: '';
+            position: absolute;
+            right: -40px;
+            top: -40px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+        .hero-divider::after {
+            content: '';
+            position: absolute;
+            right: 60px;
+            bottom: -60px;
+            width: 160px;
+            height: 160px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+        .hero-divider .hero-text { position: relative; z-index: 1; }
+        .hero-divider .hero-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 6px;
+        }
+        .hero-divider .hero-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #FFFFFF;
+            line-height: 1.2;
+        }
+        .hero-divider .hero-sub {
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+            margin-top: 6px;
+        }
+        .hero-divider .hero-icon {
+            font-size: 56px;
+            position: relative;
+            z-index: 1;
+            opacity: 0.9;
+            flex-shrink: 0;
+        }
+
+        /* ===== SELECTOR CARD ===== */
+        .selector-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+        }
+        .selector-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 180px;
+        }
+        .selector-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .selector-group select {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 15px;
+            color: var(--text-primary);
+            background: var(--bg-main);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            outline: none;
             cursor: pointer;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
-            margin: 10px auto;  /* ✅ Centers the message box with spacing */
-            border-radius: 8px;  /* ✅ Adds rounded corners */
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232D6A4F' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        .selector-group select:focus {
+            border-color: var(--brand-green);
+            box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
         }
 
-        /* ✅ Reduce line spacing in the message box */
-        #messageBox p {
-            margin: 2px 0;  /* ✅ Reduces space between the two lines */
-            line-height: 1.2;  /* ✅ Reduces vertical spacing */
+        /* ===== CHART SECTION ===== */
+        .charts-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px 16px 16px;
+            margin-bottom: 20px;
+        }
+        .food-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--brand-green);
+            text-align: center;
+            margin-bottom: 18px;
+            letter-spacing: 0.3px;
+        }
+        .food-title span {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-left: 8px;
+        }
+        .chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+        .chart-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            width: 260px !important;
+            height: 260px !important;
+            max-width: 100%;
         }
 
-        /* ✅ Ensure readability on small screens */
-        @media (max-width: 600px) {
-            #messageBox {
-                font-size: 16px;  /* ✅ Slightly smaller text for mobile */
-                padding: 3px 5px;
-            }
-    
-            #messageBox p {
-                line-height: 1.1;  /* ✅ Further reduce spacing on small screens */
-            }
+        /* ===== NUTRIENT TABLE ===== */
+        .table-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 0;
+            margin-bottom: 20px;
+            overflow: hidden;
         }
-        
-        /* ✅ Set a maximum width for the table */
+        .section-header {
+            background: linear-gradient(90deg, var(--brand-green) 0%, var(--brand-green-light) 100%);
+            color: white;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-header .icon { font-size: 18px; }
         table {
-            max-width: 600px;
-            width: 90%;
-            margin: auto;
+            width: 100%;
             border-collapse: collapse;
         }
-        
-        /* ✅ Apply text and background color for nutrient rows of Table */
-        tr:nth-child(2) td { color: #333333; background-color: #FFFFFF; }  /* 熱量 */
-        tr:nth-child(3) td { color: #315231; background-color: #ECFFEC; }  /* 醣類 */
-        tr:nth-child(4) td { color: #315231; background-color: #ECFFEC; }  /* 膳食纖維(g) */
-        tr:nth-child(5) td { color: #C00000; background-color: #ECFFEC; }  /* 糖質總量(g) */
-        tr:nth-child(6) td { color: #542222; background-color: #FFF9F8; }  /* 蛋白質 */
-        tr:nth-child(7) td { color: #574500; background-color: #FDFFD4; }  /* 脂肪 */
-        tr:nth-child(8) td { color: #264B5E; background-color: #E8FAFF; }  /* 水 */
-        tr:nth-child(9) td { color: #424242; background-color: #FAFAFA; } /* 鈉 */
-        tr:nth-child(10) td { color: #424242; background-color: #FAFAFA; } /* 鉀 */
-        tr:nth-child(11) td { color: #424242; background-color: #FAFAFA; } /* 鈣 */
-        tr:nth-child(12) td { color: #424242; background-color: #FAFAFA; } /* 鎂 */
-        tr:nth-child(13) td { color: #424242; background-color: #FAFAFA; } /* 鐵 */
-        tr:nth-child(14) td { color: #424242; background-color: #FAFAFA; } /* 鋅 */  
-        tr:nth-child(15) td { color: #424242; background-color: #FAFAFA; } /* 磷 */   
-        tr:nth-child(16) td { color: #424242; background-color: #FAFAFA; } /* 銅 */  
-        tr:nth-child(17) td { color: #3D453F; background-color: #FDFFD4; } /* 維生素A(RE) */  
-        tr:nth-child(18) td { color: #3D453F; background-color: #FDFFD4; } /* β-胡蘿蔔素 */
-        tr:nth-child(19) td { color: #3D453F; background-color: #FDFFD4; } /* 維生素E(α-TE) */
-        tr:nth-child(20) td { color: #3D453F; background-color: #E8FAFF; } /* 維生素B1 */
-        tr:nth-child(21) td { color: #3D453F; background-color: #E8FAFF; } /* 維生素B2 */
-        tr:nth-child(22) td { color: #3D453F; background-color: #E8FAFF; } /* 維生素B3(菸鹼素) */  
-        tr:nth-child(23) td { color: #3D453F; background-color: #E8FAFF; } /* 維生素B6 */   
-        tr:nth-child(24) td { color: #3D453F; background-color: #E8FAFF; } /* 葉酸(維生素B9) */ 
-        tr:nth-child(25) td { color: #3D453F; background-color: #E8FAFF; } /* 維生素B12 */ 
-        tr:nth-child(26) td { color: #3D453F; background-color: #E8FAFF; } /* 維生素C */ 
-        tr:nth-child(27) td { color: #4D543D; background-color: #F2FCC6; }  /* MUFA */
-        tr:nth-child(28) td { color: #54692A; background-color: #EBFFD4; }  /* PUFA */
-        tr:nth-child(29) td { color: #54692A; background-color: #EBFFD4; }  /* LA */
-        tr:nth-child(30) td { color: #54692A; background-color: #EBFFD4; }  /* ALA */
-        tr:nth-child(31) td { color: #542222; background-color: #FFF9F8; }  /* 酥胺酸(Thr) */
-        tr:nth-child(32) td { color: #542222; background-color: #FFF9F8; }  /* 胱胺酸(Cys) */     
-        tr:nth-child(33) td { color: #542222; background-color: #FFF9F8; }  /* 纈胺酸(Val) */
-        tr:nth-child(34) td { color: #542222; background-color: #FFF9F8; }  /* 甲硫胺酸(Met) */   
-        tr:nth-child(35) td { color: #542222; background-color: #FFF9F8; }  /* 異白胺酸(Ile) */
-        tr:nth-child(36) td { color: #542222; background-color: #FFF9F8; }  /* 白胺酸(Leu) */  
-        tr:nth-child(37) td { color: #542222; background-color: #FFF9F8; }  /* 酪胺酸(Tyr) */
-        tr:nth-child(38) td { color: #542222; background-color: #FFF9F8; }  /* 苯丙胺酸(Phe) */ 
-        tr:nth-child(39) td { color: #542222; background-color: #FFF9F8; }  /* 離胺酸(Lys) */
-        tr:nth-child(40) td { color: #542222; background-color: #FFF9F8; }  /* 組胺酸(His) */ 
-        tr:nth-child(41) td { color: #542222; background-color: #FFF9F8; }  /* 色胺酸(Trp) */
-        tr:nth-child(42) td { color: #542222; background-color: #FFF9F8; }  /* 精胺酸(Arg) */ 
-        tr:nth-child(43) td { color: #C00000; background-color: #FDE9D9; }  /* SFA */
-        tr:nth-child(44) td { color: #C00000; background-color: #FDE9D9; }  /* 反式脂肪 */
-        tr:nth-child(45) td { color: #C00000; background-color: #FDE9D9; }  /* 膽固醇 */
-
-        
-        /* ✅ Ensure font size matches the chart title (20px) */
         th {
-            font-size: 20px;  /* ✅ Match chart title size */
-            font-weight: bold;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            background: #F0F7F3;
+            padding: 12px 16px;
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         td {
-            font-size: 20px;  /* ✅ Match values with chart font */
+            font-size: 15px;
             text-align: center;
-            padding: 8px;    /* ✅ Ensure table columns have proper spacing */
-            border: 1px solid black;
+            padding: 10px 16px;
+            border-bottom: 1px solid #EEF4F1;
         }
-        th { background-color: #f2f2f2; }
-        
-        .dropdown-container {
-            display: flex;
-            flex-wrap: wrap;  /* ✅ Allows wrapping to a column if space is insufficient */
-            justify-content: center;
-            gap: 10px; /* Adjust spacing between dropdowns */
+        td:first-child { text-align: left; font-weight: 500; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(45,106,79,0.03) !important; }
+
+        /* Nutrient category colour coding */
+        tr:nth-child(2) td  { color: #1B2D27; }
+        tr:nth-child(3) td,
+        tr:nth-child(4) td  { color: #1A5C2A; background: #F2FBF4; }
+        tr:nth-child(5) td  { color: #B83232; background: #FEF5F5; }
+        tr:nth-child(6) td  { color: #7A2222; background: #FFF8F8; }
+        tr:nth-child(7) td  { color: #6B5000; background: #FFFBEA; }
+        tr:nth-child(8) td  { color: #1A4A6B; background: #EEF7FF; }
+        tr:nth-child(9) td,
+        tr:nth-child(10) td,
+        tr:nth-child(11) td,
+        tr:nth-child(12) td,
+        tr:nth-child(13) td,
+        tr:nth-child(14) td,
+        tr:nth-child(15) td,
+        tr:nth-child(16) td { color: #3A4A42; background: #F8FAF9; }
+        tr:nth-child(17) td,
+        tr:nth-child(18) td,
+        tr:nth-child(19) td { color: #4A5A1A; background: #FAFBEA; }
+        tr:nth-child(20) td,
+        tr:nth-child(21) td,
+        tr:nth-child(22) td,
+        tr:nth-child(23) td,
+        tr:nth-child(24) td,
+        tr:nth-child(25) td,
+        tr:nth-child(26) td { color: #1A4A5A; background: #EEF6FF; }
+        tr:nth-child(27) td,
+        tr:nth-child(28) td,
+        tr:nth-child(29) td,
+        tr:nth-child(30) td { color: #2A5A1A; background: #F2FAEE; }
+        tr:nth-child(31) td,
+        tr:nth-child(32) td,
+        tr:nth-child(33) td,
+        tr:nth-child(34) td,
+        tr:nth-child(35) td,
+        tr:nth-child(36) td,
+        tr:nth-child(37) td,
+        tr:nth-child(38) td,
+        tr:nth-child(39) td,
+        tr:nth-child(40) td,
+        tr:nth-child(41) td,
+        tr:nth-child(42) td { color: #6A2222; background: #FFF6F6; }
+        tr:nth-child(43) td,
+        tr:nth-child(44) td,
+        tr:nth-child(45) td { color: #B83232; background: #FEF0EE; }
+
+        /* ===== DV% PILL ===== */
+        td[id$="DV"], td[id$="DV"] { font-weight: 600; }
+
+        /* ===== FOOTNOTE ===== */
+        .footnote {
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 12px 24px 16px;
+            line-height: 1.6;
+        }
+        .footnote a { color: var(--brand-green); }
+
+        /* ===== BAR CHARTS ===== */
+        .bar-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             margin-bottom: 20px;
-            max-width: 90%; /* Prevents the dropdowns from exceeding the screen width */
-            margin-left: auto;
-            margin-right: auto;
+            overflow: hidden;
         }
-
-        /* Ensure the label and dropdown text have the same font size */
-        .dropdown-container label {
-            font-size: 18px; /* Match the dropdown text size */
-            font-weight: normal; /* Adjust weight to match the dropdown */
-            align-self: center; /* Align with the dropdown vertically */
-            color: gray; /* Change text color to gray */
-        }
-
-        /* Ensure select elements have consistent styling */
-        .dropdown-container select {
-            font-size: 18px; /* Ensure font size is the same as the label */
-            color: black;  /* Change dropdown text color to black */
-            padding: 5px; /* Add some padding for better appearance */
-        } 
-
         #nutrientChartContainer {
             width: 100%;
-            max-width: 900px; /* Ensure same width for both charts */
-            margin: auto;
-            padding-bottom: 5px; /* Reduce excessive spacing */
+            padding: 16px 16px 8px;
         }
-
         #aminoAcidChartContainer {
             width: 100%;
-            max-width: 795px; /* Ensure same width for both charts */
-            margin: auto;
-            padding-bottom: 20px; /* Reduce excessive spacing */
+            padding: 8px 16px 16px;
         }
-
         .nutrientBarCanvas {
             width: 100% !important;
-            height: auto !important;  /* Allow dynamic height */
-            min-height: 250px !important;  /* Ensure text is not squeezed */
-            max-height: 1000px !important; /* Prevent excessive stretching */
+            height: auto !important;
+            min-height: 250px !important;
+            max-height: 1000px !important;
         }
 
-        /* Prevent overlapping with the next section title */
-        #nutrientReferenceTitle {
-            margin-top: 30px !important; /* Ensure spacing before the next title */
+        /* ===== DRI SECTION ===== */
+        .dri-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .dri-selector-wrap {
+            padding: 16px 24px;
+            background: #F0F7F3;
+            border-bottom: 1px solid var(--border);
+        }
+        .dri-selector-wrap select {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: white;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 32px 8px 12px;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232D6A4F' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            min-width: 260px;
+        }
+        .dri-selector-wrap select:focus {
+            border-color: var(--brand-green);
+            box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
         }
 
-
-        /* Set the text color to gray only for SexAgeSelect */
-        #SexAgeSelect {
-            color: gray;
+        /* ===== FOOTER ===== */
+        .site-footer {
+            text-align: center;
+            padding: 24px 16px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+            margin-top: 16px;
         }
+        .site-footer a { color: var(--brand-green); }
 
-        
-       /* ✅ Ensure readability on mobile */
-       @media (max-width: 600px) {
-           table {
-               width: 100%;  /* ✅ Table takes full width on smaller screens */
-           }
-           th, td {
-               font-size: 18px;  /* ✅ Slightly smaller for small screens */
-           }
-       }
-        
-       /* ✅ Ensure dropdowns take full width on small screens */
-       @media (max-width: 600px) {  /* Applies only on screens smaller than 600px */
-           .dropdown-container {
-               flex-direction: column;  /* Stack dropdowns in a column */
-               align-items: center;
-           }
-
-           select {
-               width: 100%;  /* Make dropdowns take full width on small screens */
-               max-width: 300px;  /* Prevents excessive stretching */
-           }
-       }
-
-        /* 🔹 Increase Font Size for Dropdowns */
-        select {
-            font-size: 18px;  /* Adjust font size */
-            padding: 5px;  /* Add padding for better spacing */
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .site-header { height: 58px; padding: 0 16px; }
+            .site-header .brand-name { font-size: 18px; }
+            .header-badge { display: none; }
+            .page-wrapper { padding: 16px 12px 40px; }
+            .selector-card { padding: 16px; }
+            td, th { font-size: 13px; padding: 8px 10px; }
+            canvas { width: 220px !important; height: 220px !important; }
         }
-
-        
-        /* Responsive Chart Layout */
-        .chart-container {
-           display: flex;
-           flex-wrap: wrap;  /* ✅ Allow charts to wrap into a row */
-           justify-content: center; /* ✅ Center the charts */
-           gap: 10px; /* ✅ Add spacing between charts */
-           max-width: 100%;
-           margin: auto;
-       }
-
-       canvas {
-           width: 260px !important;  /* ✅ Set fixed width */
-           height: 260px !important; /* ✅ Set fixed height */
-           max-width: 100%;
-       }
-       
-    </style>
-
-    <link rel="icon" href="https://nutrition-lab.vercel.app/NR32x32.ico">
     
 </head>
 <body>
 
-    <!-- Scrollable Message Box -->
-    <div id="messageBox" onclick="openMessageLink()">
-        <p id="messageLine1"></p>
-        <p id="messageLine2"></p>
-    </div>
-     
-    <div class="dropdown-container">
-        <select id="categorySelect"></select>
-        <select id="foodSelect"></select>
-    </div> 
-    
-    <!-- Charts Row -->
-    <div class="chart-container">
-        <canvas id="massChart"></canvas>
-        <canvas id="calorieChart"></canvas>
-        <canvas id="fatChart"></canvas>
+<!-- ===== STICKY HEADER ===== -->
+<header class="site-header">
+    <a class="logo-wrap" href="#">
+        <img class="logo-img" src="logo.png" alt="TZ-NutriQ Logo">
+        <div>
+            <div class="brand-name">TZ-NutriQ Web</div>
+            <div class="brand-sub">食品營養成分查詢平台</div>
+        </div>
+    </a>
+    <span class="header-badge">🇹🇼 2024版 U1</span>
+</header>
+
+<!-- ===== HIDDEN MESSAGE BOX (JS still needs these IDs) ===== -->
+<div id="messageBox" onclick="openMessageLink()" style="display:none">
+    <p id="messageLine1"></p>
+    <p id="messageLine2"></p>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="page-wrapper">
+
+    <!-- UNIT 1 HERO -->
+    <div class="hero-divider">
+        <div class="hero-text">
+            <div class="hero-label">Unit 1</div>
+            <div class="hero-title">🌿 食品營養成分</div>
+            <div class="hero-sub">選擇食品，查看每 100g 的完整營養資訊與 DV% 比較</div>
+        </div>
+        <div class="hero-icon">📊</div>
     </div>
 
-    <!-- Show Alternative name in the pageTitle -->
-    <h1 id="pageTitle" style="font-size: 16px; color: gray;"> - </h1>
-    
+    <!-- Food Selector Card -->
+    <div class="selector-card">
+        <div class="selector-group">
+            <label>食品分類</label>
+            <select id="categorySelect"></select>
+        </div>
+        <div class="selector-group">
+            <label>食品名稱</label>
+            <select id="foodSelect"></select>
+        </div>
+    </div>
+
+    <!-- Charts + Title Card -->
+    <div class="charts-section">
+        <div id="pageTitle" class="food-title"> - </div>
+        <div class="chart-container">
+            <div class="chart-box"><canvas id="massChart"></canvas></div>
+            <div class="chart-box"><canvas id="calorieChart"></canvas></div>
+            <div class="chart-box"><canvas id="fatChart"></canvas></div>
+        </div>
+    </div>
+
     <!-- Nutrient Breakdown Table -->
-    <table style="width:100%">
-        <tr>
-            <th style="width:45%">營養成分</th>
-            <th style="width:30%">含量</th>
-            <th style="width:25%">DV(%)*</th>
-        </tr>
+    <div class="table-section">
+        <div class="section-header"><span class="icon">📌</span> 營養成分明細（每 100g）</div>
+        <table>
+            <tr>
+                <th style="width:45%">營養成分</th>
+                <th style="width:30%">含量</th>
+                <th style="width:25%">DV(%)*</th>
+            </tr>
         <tr><td>熱量</td><td id="totalCalories"></td><td id="caloriesDV"></td></tr>
         <tr><td>醣類(碳水化合物)</td><td id="carbs"></td><td id="carbDV"></td></tr>
         <tr><td>膳食纖維</td><td id="fibre"></td><td id="fibreDV"></td></tr>        
@@ -297,39 +541,45 @@
         <tr><td>飽和脂肪*</td><td id="sfa"></td><td id="sfaDV"></td></tr>
         <tr><td>反式脂肪*</td><td id="transfat"></td><td id="transfatDV"></td></tr>
         <tr><td>膽固醇*</td><td id="cholesterol"></td><td id="cholesterolDV"></td></tr>
-    </table>
-
-    <p style="font-size: 16px; color: gray !important;">*DV%=100%×成分含量/參考攝取量，糖質總量、飽和脂肪、反式脂肪、膽固醇為上限攝取量百分比</p>
-    <p style="font-size: 16px; color: gray !important;">
-      資料來源：<a href="https://consumer.fda.gov.tw/Food/TFND.aspx?nodeID=178" target="_blank" style="color: gray; text-decoration: underline;">
-        食品營養成分資料庫(2024版U1)
-      </a>
-    </p>
-
-    
-    <br><br>
-    <!-- Nutrient Breakdown Bar Chart -->
-    <div id="nutrientChartContainer">
-        <canvas id="mainNutrientBarChart" class="nutrientBarCanvas"></canvas>
-    </div>
-    <div id="aminoAcidChartContainer" style="margin-top: 20px;">
-        <canvas id="aminoAcidBarChart" class="nutrientBarCanvas"></canvas>
+        </table>
+        <div class="footnote">
+            *DV%=100%×成分含量/參考攝取量，糖質總量、飽和脂肪、反式脂肪、膽固醇為上限攝取量百分比。
+            資料來源：<a href="https://consumer.fda.gov.tw/Food/TFND.aspx?nodeID=178" target="_blank">食品營養成分資料庫(2024版U1)</a>
+        </div>
     </div>
 
-    <br>
-    
-    <h2>每日參考攝取量DRI(或<span style="color: #C00000;">上限UL</span>)</h2>
- 
-    <div class="dropdown-container">
-        <select id="SexAgeSelect"></select>
-    </div>     
+    <!-- Bar Charts -->
+    <div class="bar-section">
+        <div class="section-header"><span class="icon">📈</span> DV% 視覺化分析</div>
+        <div id="nutrientChartContainer">
+            <canvas id="mainNutrientBarChart" class="nutrientBarCanvas"></canvas>
+        </div>
+        <div id="aminoAcidChartContainer">
+            <canvas id="aminoAcidBarChart" class="nutrientBarCanvas"></canvas>
+        </div>
+    </div>
 
-    <!-- DRI Table -->
-    <table style="width:100%">
-        <tr>
-            <th style="width:60%">成分</th>
-            <th style="width:40%">DRI</th>
-        </tr>
+    <!-- UNIT 2 HERO -->
+    <div class="hero-divider">
+        <div class="hero-text">
+            <div class="hero-label">Unit 2</div>
+            <div class="hero-title">📝 每日參考攝取量 DRI</div>
+            <div class="hero-sub">依性別年齡選擇對應的 DRI 標準值（含上限 UL）</div>
+        </div>
+        <div class="hero-icon">🧑‍👩‍👧‍👦</div>
+    </div>
+
+    <!-- DRI Section -->
+    <div class="dri-section">
+        <div class="section-header"><span class="icon">📌</span> 每日參考攝取量 DRI（或上限 <span style="color:#FFDDD2">UL</span>）</div>
+        <div class="dri-selector-wrap">
+            <select id="SexAgeSelect"></select>
+        </div>
+        <table>
+            <tr>
+                <th style="width:60%">成分</th>
+                <th style="width:40%">DRI</th>
+            </tr>
         <tr><td>熱量</td><td id="CaloriesDRI"></td>
         <tr><td>醣類(碳水化合物)</td><td id="carbsDRI"></td>
         <tr><td>膳食纖維</td><td id="fibreDRI"></td>        
@@ -374,8 +624,18 @@
         <tr><td>飽和脂肪</td><td id="sfaUL"></td>
         <tr><td>反式脂肪</td><td id="transfatUL"></td>
         <tr><td>膽固醇</td><td id="cholesterolUL"></td>        
-    </table>
-    
+        </table>
+    </div>
+
+</div><!-- /.page-wrapper -->
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+    <strong>TZ-NutriQ Web</strong> &nbsp;·&nbsp; 資料來源：
+    <a href="https://consumer.fda.gov.tw/Food/TFND.aspx?nodeID=178" target="_blank">食品營養成分資料庫 2024版 U1</a>
+    &nbsp;·&nbsp; 臺灣食品藥物管理署
+</footer>
+
     <script>
 
         let driReady = false;
@@ -854,7 +1114,8 @@
             let mTrp = parseFloat(food["Trp (mg)"]);      
             let mArg = parseFloat(food["Arg (mg)"]);    
             
-            document.getElementById('pageTitle').textContent = food["Alternative Name"]; 
+            let altName = food["Alternative Name"] || food["Food Name"] || '';
+            document.getElementById('pageTitle').innerHTML = altName + '<span>每 100g</span>';
 
             if (totalCalories<100) {
                 document.getElementById('totalCalories').textContent = safeFixed(totalCalories, 1, ' kcal');
