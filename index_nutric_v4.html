@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TZ-NutriQ Web — 食品營養成分查詢</title>
+    <link rel="icon" href="logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <style>
+        :root {
+            --brand-green: #2D6A4F;
+            --brand-green-light: #40916C;
+            --brand-green-pale: #D8F3DC;
+            --brand-gold: #F4A261;
+            --brand-gold-light: #FFDDD2;
+            --bg-main: #F7FAF8;
+            --bg-card: #FFFFFF;
+            --text-primary: #1B2D27;
+            --text-secondary: #5A7268;
+            --text-muted: #8FA89F;
+            --border: #D4E6DC;
+            --shadow: 0 2px 12px rgba(45,106,79,0.10);
+            --shadow-lg: 0 6px 30px rgba(45,106,79,0.15);
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Noto Sans TC', 'Inter', Arial, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* ===== HEADER ===== */
+        .site-header {
+            background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-light) 100%);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 68px;
+            box-shadow: 0 2px 16px rgba(45,106,79,0.25);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .site-header .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+        .site-header .logo-img {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: white;
+            padding: 3px;
+            object-fit: contain;
+        }
+        .site-header .brand-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: 0.5px;
+        }
+        .site-header .brand-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.75);
+            font-weight: 400;
+            margin-top: 1px;
+        }
+        /* ===== HEADER TAB NAV ===== */
+        .header-tabs {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .header-tab {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.65);
+            cursor: pointer;
+            border: 2px solid transparent;
+            background: transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .header-tab:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.12);
+        }
+        .header-tab.active {
+            color: #fff;
+            background: rgba(255,255,255,0.18);
+            border-color: rgba(255,255,255,0.5);
+        }
+        .header-tab .tab-icon { font-size: 16px; }
+        .header-tab .tab-badge {
+            font-size: 10px;
+            background: rgba(255,255,255,0.25);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header-tab.active .tab-badge {
+            background: var(--brand-gold);
+            color: var(--brand-green);
+        }
+
+        /* ===== LAYOUT ===== */
+        .page-wrapper {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+
+        /* ===== MESSAGE TICKER (hidden) ===== */
+        #messageBox { display: none !important; }
+
+        /* ===== TAB PANELS ===== */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ===== SELECTOR CARD ===== */
+        .selector-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+        }
+        .selector-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 180px;
+        }
+        .selector-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .selector-group select, .selector-group input {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 15px;
+            color: var(--text-primary);
+            background: var(--bg-main);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .selector-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232D6A4F' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        .selector-group input[type="number"] {
+            cursor: text;
+        }
+        .selector-group select:focus, .selector-group input:focus {
+            border-color: var(--brand-green);
+            box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
+        }
+
+        /* ===== U3 MIX ROW ===== */
+        .mix-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            width: 100%;
+            background: rgba(45,106,79,0.03);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--brand-green-light);
+            margin-bottom: 12px;
+        }
+        .mix-row-title {
+            width: 100%;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--brand-green);
+        }
+
+        /* ===== CHART SECTION ===== */
+        .charts-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px 16px 16px;
+            margin-bottom: 20px;
+        }
+        .food-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--brand-green);
+            text-align: center;
+            margin-bottom: 18px;
+            letter-spacing: 0.3px;
+        }
+        .food-title span {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-left: 8px;
+        }
+        .chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+        .chart-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            width: 260px !important;
+            height: 260px !important;
+            max-width: 100%;
+        }
+
+        /* ===== NUTRIENT TABLE ===== */
+        .table-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 0;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .section-header {
+            background: linear-gradient(90deg, var(--brand-green) 0%, var(--brand-green-light) 100%);
+            color: white;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-header .icon { font-size: 18px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            background: #F0F7F3;
+            padding: 12px 16px;
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            font-size: 15px;
+            text-align: center;
+            padding: 10px 16px;
+            border-bottom: 1px solid #EEF4F1;
+        }
+        td:first-child { text-align: left; font-weight: 500; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(45,106,79,0.03) !important; }
+
+        /* Color Coding styles mapped onto tbody element rows */
+        .table-body tr:nth-child(1) td  { color: #1B2D27; font-weight: bold; }
+        .table-body tr:nth-child(2) td,
+        .table-body tr:nth-child(3) td  { color: #1A5C2A; background: #F2FBF4; }
+        .table-body tr:nth-child(4) td  { color: #B83232; background: #FEF5F5; }
+        .table-body tr:nth-child(5) td  { color: #7A2222; background: #FFF8F8; }
+        .table-body tr:nth-child(6) td  { color: #6B5000; background: #FFFBEA; }
+        .table-body tr:nth-child(7) td  { color: #1A4A6B; background: #EEF7FF; }
+        .table-body tr:nth-child(8) td,
+        .table-body tr:nth-child(9) td,
+        .table-body tr:nth-child(10) td,
+        .table-body tr:nth-child(11) td,
+        .table-body tr:nth-child(12) td,
+        .table-body tr:nth-child(13) td,
+        .table-body tr:nth-child(14) td,
+        .table-body tr:nth-child(15) td { color: #3A4A42; background: #F8FAF9; }
+        .table-body tr:nth-child(16) td,
+        .table-body tr:nth-child(17) td,
+        .table-body tr:nth-child(18) td { color: #4A5A1A; background: #FAFBEA; }
+        .table-body tr:nth-child(19) td,
+        .table-body tr:nth-child(20) td,
+        .table-body tr:nth-child(21) td,
+        .table-body tr:nth-child(22) td,
+        .table-body tr:nth-child(23) td,
+        .table-body tr:nth-child(24) td,
+        .table-body tr:nth-child(25) td { color: #1A4A5A; background: #EEF6FF; }
+        .table-body tr:nth-child(26) td,
+        .table-body tr:nth-child(27) td,
+        .table-body tr:nth-child(28) td,
+        .table-body tr:nth-child(29) td { color: #2A5A1A; background: #F2FAEE; }
+        .table-body tr:nth-child(30) td,
+        .table-body tr:nth-child(31) td,
+        .table-body tr:nth-child(32) td,
+        .table-body tr:nth-child(33) td,
+        .table-body tr:nth-child(34) td,
+        .table-body tr:nth-child(35) td,
+        .table-body tr:nth-child(36) td,
+        .table-body tr:nth-child(37) td,
+        .table-body tr:nth-child(38) td,
+        .table-body tr:nth-child(39) td,
+        .table-body tr:nth-child(40) td,
+        .table-body tr:nth-child(41) td { color: #6A2222; background: #FFF6F6; }
+        .table-body tr:nth-child(42) td,
+        .table-body tr:nth-child(43) td,
+        .table-body tr:nth-child(44) td { color: #B83232; background: #FEF0EE; }
+
+        /* ===== FOOTNOTE ===== */
+        .footnote {
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 12px 24px 16px;
+            line-height: 1.6;
+        }
+        .footnote a { color: var(--brand-green); }
+
+        /* ===== BAR CHARTS ===== */
+        .bar-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        #nutrientChartContainer, #u3NutrientChartContainer {
+            width: 100%;
+            padding: 16px 16px 8px;
+        }
+        #aminoAcidChartContainer, #u3AminoAcidChartContainer {
+            width: 100%;
+            padding: 8px 16px 16px;
+        }
+        .nutrientBarCanvas {
+            width: 100% !important;
+            height: auto !important;
+            min-height: 250px !important;
+            max-height: 1000px !important;
+        }
+
+        /* ===== DRI SECTION ===== */
+        .dri-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .dri-selector-wrap {
+            padding: 16px 24px;
+            background: #F0F7F3;
+            border-bottom: 1px solid var(--border);
+        }
+        .dri-selector-wrap select {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: white;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 32px 8px 12px;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232D6A4F' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            min-width: 260px;
+        }
+
+        /* ===== FOOTER ===== */
+        .site-footer {
+            text-align: center;
+            padding: 24px 16px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+            margin-top: 16px;
+        }
+        .site-footer a { color: var(--brand-green); }
+
+        @media (max-width: 640px) {
+            .site-header { height: 58px; padding: 0 12px; }
+            .site-header .brand-name { font-size: 16px; }
+            .header-tab { padding: 6px 10px; font-size: 12px; }
+            .page-wrapper { padding: 16px 12px 40px; }
+            .selector-card { padding: 16px; }
+            td, th { font-size: 13px; padding: 8px 10px; }
+            canvas { width: 220px !important; height: 220px !important; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <a class="logo-wrap" href="#">
+        <img class="logo-img" src="logo.png" alt="TZ-NutriQ Logo">
+        <div>
+            <div class="brand-name">TZ-NutriQ Web</div>
+            <div class="brand-sub">食品營養成分查詢平台</div>
+        </div>
+    </a>
+    <nav class="header-tabs">
+        <button class="header-tab active" onclick="switchTab('unit1', this)">
+            <span class="tab-icon">🌿</span>
+            <span>單品查詢</span>
+            <span class="tab-badge">U1</span>
+        </button>
+        <button class="header-tab" onclick="switchTab('unit2', this)">
+            <span class="tab-icon">📝</span>
+            <span>國人標準</span>
+            <span class="tab-badge">U2</span>
+        </button>
+        <button class="header-tab" onclick="switchTab('unit3', this)">
+            <span class="tab-icon">🧪</span>
+            <span>配方比例</span>
+            <span class="tab-badge">U3</span>
+        </button>
+    </nav>
+</header>
+
+<div id="messageBox" onclick="openMessageLink()" style="display:none">
+    <p id="messageLine1"></p>
+    <p id="messageLine2"></p>
+</div>
+
+<div class="page-wrapper">
+
+    <div id="panel-unit1" class="tab-panel active">
+        <div class="selector-card">
+            <div class="selector-group">
+                <label>食品分類</label>
+                <select id="categorySelect"></select>
+            </div>
+            <div class="selector-group">
+                <label>食品名稱</label>
+                <select id="foodSelect"></select>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div id="pageTitle" class="food-title"> - </div>
+            <div class="chart-container">
+                <div class="chart-box"><canvas id="massChart"></canvas></div>
+                <div class="chart-box"><canvas id="calorieChart"></canvas></div>
+                <div class="chart-box"><canvas id="fatChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="section-header"><span class="icon">📌</span> 營養成分明細（每 100g）</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:45%">營養成分</th>
+                        <th style="width:30%">含量</th>
+                        <th style="width:25%">DV(%)*</th>
+                    </tr>
+                </thead>
+                <tbody id="nutrientTableBody" class="table-body"></tbody>
+            </table>
+            <div class="footnote">
+                *DV%=100%×成分含量/參考攝取量。
+                資料來源：<a href="https://consumer.fda.gov.tw/Food/TFND.aspx?nodeID=178" target="_blank">食品營養成分資料庫</a>
+            </div>
+        </div>
+
+        <div class="bar-section">
+            <div class="section-header"><span class="icon">📈</span> DV% 視覺化分析</div>
+            <div id="nutrientChartContainer"><canvas id="mainNutrientBarChart" class="nutrientBarCanvas"></canvas></div>
+            <div id="aminoAcidChartContainer"><canvas id="aminoAcidBarChart" class="nutrientBarCanvas"></canvas></div>
+        </div>
+    </div>
+
+    <div id="panel-unit2" class="tab-panel">
+        <div class="dri-section">
+            <div class="section-header"><span class="icon">📌</span> 每日參考攝取量 DRI（或上限 <span style="color:#FFDDD2">UL</span>）</div>
+            <div class="dri-selector-wrap">
+                <select id="SexAgeSelect"></select>
+            </div>
+            <table id="driTable">
+                <thead>
+                    <tr>
+                        <th style="width:60%">成分</th>
+                        <th style="width:40%">DRI</th>
+                    </tr>
+                </thead>
+                <tbody id="driTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="panel-unit3" class="tab-panel">
+        <div class="selector-card">
+            <div class="mix-row">
+                <div class="mix-row-title">食品 A 來源配置</div>
+                <div class="selector-group">
+                    <label>食品分類 A</label>
+                    <select id="categorySelectA" onchange="onCategoryChangeMix('A')"></select>
+                </div>
+                <div class="selector-group">
+                    <label>樣品名稱 A</label>
+                    <select id="foodSelectA" onchange="calculateMix()"></select>
+                </div>
+                <div class="selector-group" style="flex:0 0 100px; min-width:80px;">
+                    <label>配方比例 A</label>
+                    <input type="number" id="ratioA" value="1" min="0" oninput="calculateMix()">
+                </div>
+            </div>
+            <div class="mix-row">
+                <div class="mix-row-title">食品 B 來源配置</div>
+                <div class="selector-group">
+                    <label>食品分類 B</label>
+                    <select id="categorySelectB" onchange="onCategoryChangeMix('B')"></select>
+                </div>
+                <div class="selector-group">
+                    <label>樣品名稱 B</label>
+                    <select id="foodSelectB" onchange="calculateMix()"></select>
+                </div>
+                <div class="selector-group" style="flex:0 0 100px; min-width:80px;">
+                    <label>配方比例 B</label>
+                    <input type="number" id="ratioB" value="2" min="0" oninput="calculateMix()">
+                </div>
+            </div>
+            <div class="mix-row">
+                <div class="mix-row-title">食品 C 來源配置</div>
+                <div class="selector-group">
+                    <label>食品分類 C</label>
+                    <select id="categorySelectC" onchange="onCategoryChangeMix('C')"></select>
+                </div>
+                <div class="selector-group">
+                    <label>樣品名稱 C</label>
+                    <select id="foodSelectC" onchange="calculateMix()"></select>
+                </div>
+                <div class="selector-group" style="flex:0 0 100px; min-width:80px;">
+                    <label>配方比例 C</label>
+                    <input type="number" id="ratioC" value="2" min="0" oninput="calculateMix()">
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div id="u3PageTitle" class="food-title">混合配方動態統計 <span>總重: 500.0g</span></div>
+            <div class="chart-container">
+                <div class="chart-box"><canvas id="u3CalorieChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="section-header"><span class="icon">🧪</span> 混合比例配方營養素明細</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:45%">營養成分</th>
+                        <th style="width:30%">配方總含量</th>
+                        <th style="width:25%">配方滿足率(DV%)</th>
+                    </tr>
+                </thead>
+                <tbody id="u3NutrientTableBody" class="table-body"></tbody>
+            </table>
+        </div>
+
+        <div class="bar-section">
+            <div class="section-header"><span class="icon">📈</span> 混合配方滿足率分析</div>
+            <div id="u3NutrientChartContainer"><canvas id="u3MainNutrientBarChart" class="nutrientBarCanvas"></canvas></div>
+            <div id="u3AminoAcidChartContainer"><canvas id="u3AminoAcidBarChart" class="nutrientBarCanvas"></canvas></div>
+        </div>
+    </div>
+
+</div>
+
+<footer class="site-footer">
+    <strong>TZ-NutriQ Web</strong> &nbsp;·&nbsp; 資料來源：臺灣食品藥物管理署食品營養成分資料庫
+</footer>
+
+<script>
+    // ===== 全域基礎宣告 =====
+    const nutrientFields = [
+        { id: "totalCalories", name: "熱量", csvKey: "Calorie (kcal)", driKey: "caloriesDRI", unit: " kcal", digits: 0 },
+        { id: "carbs", name: "醣類(碳水化合物)", csvKey: "Carbs (g)", driKey: "carbDRI", unit: " g", digits: 1 },
+        { id: "fibre", name: "膳食纖維", csvKey: "Fibre (g)", driKey: "fibreDRI", unit: " g", digits: 1 },
+        { id: "sugar", name: "糖質總量", csvKey: "Sugar (g)", driKey: "sugarUL", unit: " g", digits: 1 },
+        { id: "protein", name: "蛋白質", csvKey: "Protein (g)", driKey: "proteinDRI", unit: " g", digits: 1 },
+        { id: "fat", name: "脂肪", csvKey: "Fat (g)", driKey: "fatDRI", unit: " g", digits: 1 },
+        { id: "water", name: "水", csvKey: "Water (g)", driKey: "waterDRI", unit: " g", digits: 1 },
+        { id: "sodium", name: "鈉", csvKey: "Sodium (mg)", driKey: "sodiumDRI", unit: " mg", digits: 0 },
+        { id: "potassium", name: "鉀", csvKey: "Potassium (mg)", driKey: "potassiumDRI", unit: " mg", digits: 0 },
+        { id: "calcium", name: "鈣", csvKey: "Calcium (mg)", driKey: "calciumDRI", unit: " mg", digits: 0 },
+        { id: "magnesium", name: "鎂", csvKey: "Magnesium (mg)", driKey: "magnesiumDRI", unit: " mg", digits: 0 },
+        { id: "iron", name: "鐵", csvKey: "Iron (mg)", driKey: "ironDRI", unit: " mg", digits: 1 },
+        { id: "zinc", name: "鋅", csvKey: "Zinc (mg)", driKey: "zincDRI", unit: " mg", digits: 1 },
+        { id: "phosphorus", name: "磷", csvKey: "Phosphorus (mg)", driKey: "phosphorusDRI", unit: " mg", digits: 0 },
+        { id: "copper", name: "銅", csvKey: "Copper (mg)", driKey: "copperDRI", unit: " mg", digits: 2 },
+        { id: "vitaminA", name: "維生素A(RE)", csvKey: "Vitamin A(RE) (ug)", driKey: "vitaminADRI", unit: " μg", digits: 0 },
+        { id: "betaCarotene", name: "β-胡蘿蔔素", csvKey: "β-Carotene (ug)", driKey: "betaCaroteneDRI", unit: " μg", digits: 0 },
+        { id: "vitaminE", name: "維生素E(α-TE)", csvKey: "Vitamin E(α-TE) (mg)", driKey: "vitaminEDRI", unit: " mg", digits: 1 },
+        { id: "vitaminB1", name: "維生素B1", csvKey: "Vitamin B1 (mg)", driKey: "vitaminB1DRI", unit: " mg", digits: 2 },
+        { id: "vitaminB2", name: "維生素B2", csvKey: "Vitamin B2 (mg)", driKey: "vitaminB2DRI", unit: " mg", digits: 2 },
+        { id: "vitaminB3", name: "維生素B3菸鹼素", csvKey: "Nicotin (mg)", driKey: "vitaminB3DRI", unit: " mg", digits: 1 },
+        { id: "vitaminB6", name: "維生素B6", csvKey: "Vitamin B6 (mg)", driKey: "vitaminB6DRI", unit: " mg", digits: 2 },
+        { id: "vitaminB9", name: "維生素B9葉酸", csvKey: "Folic acid (ug)", driKey: "vitaminB9DRI", unit: " μg", digits: 0 },
+        { id: "vitaminB12", name: "維生素B12", csvKey: "Vitamin B12 (ug)", driKey: "vitaminB12DRI", unit: " μg", digits: 1 },
+        { id: "vitaminC", name: "維生素C", csvKey: "Vitamin C (mg)", driKey: "vitaminCDRI", unit: " mg", digits: 0 },
+        { id: "mufa", name: "單不飽脂肪酸MUFA", csvKey: "MUFA (mg)", driKey: "mufaDRI", unit: " mg", digits: 0 },
+        { id: "pufa", name: "多不飽脂肪酸PUFA", csvKey: "PUFA (mg)", driKey: "pufaDRI", unit: " mg", digits: 0 },
+        { id: "la", name: "亞麻油酸LA", csvKey: "LA (mg)", driKey: "laDRI", unit: " mg", digits: 0 },
+        { id: "ala", name: "次亞麻油酸ALA", csvKey: "ALA (mg)", driKey: "alaDRI", unit: " mg", digits: 0 },
+        { id: "Thr", name: "酥胺酸(Thr)", csvKey: "Thr (mg)", driKey: "ThrDRI", unit: " mg", digits: 0 },
+        { id: "Cys", name: "胱胺酸(Cys)", csvKey: "Cys (mg)", driKey: "CysDRI", unit: " mg", digits: 0 },
+        { id: "Val", name: "纈胺酸(Val)", csvKey: "Val (mg)", driKey: "ValDRI", unit: " mg", digits: 0 },
+        { id: "Met", name: "甲硫胺酸(Met)", csvKey: "Met (mg)", driKey: "MetDRI", unit: " mg", digits: 0 },
+        { id: "Ile", name: "異白胺酸(Ile)", csvKey: "Ile (mg)", driKey: "IleDRI", unit: " mg", digits: 0 },
+        { id: "Leu", name: "白胺酸(Leu)", csvKey: "Leu (mg)", driKey: "LeuDRI", unit: " mg", digits: 0 },
+        { id: "Tyr", name: "酪胺酸(Tyr)", csvKey: "Tyr (mg)", driKey: "TyrDRI", unit: " mg", digits: 0 },
+        { id: "Phe", name: "苯丙胺酸(Phe)", csvKey: "Phe (mg)", driKey: "PheDRI", unit: " mg", digits: 0 },
+        { id: "Lys", name: "離胺酸(Lys)", csvKey: "Lys (mg)", driKey: "LysDRI", unit: " mg", digits: 0 },
+        { id: "His", name: "組胺酸(His)", csvKey: "His (mg)", driKey: "HisDRI", unit: " mg", digits: 0 },
+        { id: "Trp", name: "色胺酸(Trp)", csvKey: "Trp (mg)", driKey: "TrpDRI", unit: " mg", digits: 0 },
+        { id: "Arg", name: "精胺酸(Arg)", csvKey: "Arg (mg)", driKey: null, unit: " mg", digits: 0 },
+        { id: "sfa", name: "飽和脂肪*", csvKey: "SFA (mg)", driKey: "sfaUL", unit: " mg", digits: 0 },
+        { id: "transfat", name: "反式脂肪*", csvKey: "Trans Fat (mg)", driKey: "transfatUL", unit: " mg", digits: 0 },
+        { id: "cholesterol", name: "膽固醇*", csvKey: "膽固醇(mg)", driKey: "cholesterolUL", unit: " mg", digits: 0 }
+    ];
+
+    let driReady = false;
+    let foodData = [];
+    let DRIData = [];
+    let driValues = {}; 
+
+    // 圖表實例指標
+    let calorieChart, fatChart, massChart, u3CalorieChart;
+    let mainNutrientBarChart, aminoAcidBarChart, u3MainNutrientBarChart, u3AminoAcidBarChart;
+
+    // ===== TAB SWITCHING =====
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.header-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById('panel-' + tabId).classList.add('active');
+        btn.classList.add('active');
+        
+        // 延時觸發圖表響應重繪
+        setTimeout(() => {
+            if (calorieChart) calorieChart.resize();
+            if (fatChart) fatChart.resize();
+            if (massChart) massChart.resize();
+            if (u3CalorieChart) u3CalorieChart.resize();
+        }, 50);
+    }
+
+    // 初始化動態數據表格框架
+    function buildTables() {
+        const u1Body = document.getElementById("nutrientTableBody");
+        const u3Body = document.getElementById("u3NutrientTableBody");
+        const driBody = document.getElementById("driTableBody");
+
+        u1Body.innerHTML = ""; u3Body.innerHTML = ""; driBody.innerHTML = "";
+
+        nutrientFields.forEach(f => {
+            u1Body.innerHTML += `<tr><td>${f.name}</td><td id="${f.id}"></td><td id="${f.id}DV"></td></tr>`;
+            u3Body.innerHTML += `<tr><td>${f.name}</td><td id="u3_${f.id}"></td><td id="u3_${f.id}DV"></td></tr>`;
+            if (f.driKey) {
+                driBody.innerHTML += `<tr><td>${f.name}</td><td id="${f.driKey}"></td></tr>`;
+            }
+        });
+        // 補上精胺酸無基準線例外
+        driBody.innerHTML += `<tr><td>精胺酸(Arg)</td><td>-</td></tr>`;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        buildTables();
+        initializeCharts();  
+        fetchData();  
+    });
+
+    // 監聽國人標準切換
+    document.getElementById("SexAgeSelect").addEventListener("change", (e) => {
+        updateDailyValues(e.target.value);
+        let event = new Event('change');   
+        document.getElementById('foodSelect').dispatchEvent(event);
+        calculateMix(); 
+    });
+     
+    document.getElementById('categorySelect').addEventListener('change', function () {
+        populateFoods(this.value, 'foodSelect');
+    });
+
+    document.getElementById('foodSelect').addEventListener('change', function () {
+        let selectedFood = foodData.find(food => food["Food Name"] === this.value);
+        if (selectedFood) displayFoodData(selectedFood);
+    });
+
+    function fetchData() {
+        fetch('food_data_a.csv').then(res => res.text()).then(csvText => {
+            Papa.parse(csvText, { header: true, skipEmptyLines: true, dynamicTyping: true, complete: function (r) {
+                foodData = results = r.data;
+                populateCategories('categorySelect');
+                populateCategories('categorySelectA');
+                populateCategories('categorySelectB');
+                populateCategories('categorySelectC');
+            }});
+        });
+        
+        fetch('DRI.csv').then(res => res.text()).then(csvText => {
+            Papa.parse(csvText, { header: true, skipEmptyLines: true, dynamicTyping: true, complete: function (r) {
+                DRIData = r.data;
+                populateSexAge();
+            }});
+        });
+    }
+
+    function populateCategories(selectId) {
+        const select = document.getElementById(selectId);
+        select.innerHTML = "";
+        let categories = [...new Set(foodData.map(f => f.Category))].filter(Boolean);
+        categories.forEach(c => {
+            let op = document.createElement('option'); op.value = c; op.textContent = c;
+            select.appendChild(op);
+        });
+
+        if(selectId === 'categorySelect') {
+            select.value = "豆類"; populateFoods("豆類", 'foodSelect', "毛豆仁");
+        } else {
+            select.selectedIndex = 0;
+            let targetFoodId = 'foodSelect' + selectId.charAt(selectId.length - 1);
+            populateFoods(select.value, targetFoodId);
+        }
+    }
+
+    function populateFoods(category, selectId, defaultFood = null) {
+        const select = document.getElementById(selectId);
+        select.innerHTML = "";
+        let filtered = foodData.filter(f => f.Category === category);
+        filtered.forEach(f => {
+            let op = document.createElement('option'); op.value = f["Food Name"]; op.textContent = f["Food Name"];
+            select.appendChild(op);
+        });
+        if (defaultFood && filtered.some(f => f["Food Name"] === defaultFood)) {
+            select.value = defaultFood;
+        } else {
+            select.selectedIndex = 0;
+        }
+        if(selectId === 'foodSelect') {
+            let f = foodData.find(x => x["Food Name"] === select.value);
+            if (f) displayFoodData(f);
+        } else {
+            calculateMix();
+        }
+    }
+
+    function onCategoryChangeMix(suffix) {
+        let category = document.getElementById('categorySelect' + suffix).value;
+        populateFoods(category, 'foodSelect' + suffix);
+    }
+
+    function populateSexAge() {
+        let select = document.getElementById("SexAgeSelect");
+        select.innerHTML = "";
+        let headers = Object.keys(DRIData[0]).slice(1);
+        headers.forEach(h => {
+            let op = document.createElement("option"); op.value = h; op.textContent = h;
+            if(h === "女31至50歲（體重54kg）") op.selected = true;
+            select.appendChild(op);
+        });
+        updateDailyValues(select.value);
+    }
+
+    function updateDailyValues(selectedSexAge) {
+        if (!DRIData || DRIData.length === 0) return;
+        let driMap = {};
+        DRIData.forEach(row => { driMap[row["SexAge"]] = row[selectedSexAge]; });
+
+        // 對照組全對映
+        const mapping = {
+            "caloriesDRI":"熱量(kcal)", "carbDRI":"總碳水化合物(g)", "fibreDRI":"膳食纖維(g)", "sugarUL":"糖質總量(g)",
+            "proteinDRI":"粗蛋白(g)", "fatDRI":"粗脂肪(g)", "waterDRI":"水分(g)", "sodiumDRI":"鈉(mg)", "potassiumDRI":"鉀(mg)",
+            "calciumDRI":"鈣(mg)", "magnesiumDRI":"鎂(mg)", "ironDRI":"鐵(mg)", "zincDRI":"鋅(mg)", "phosphorusDRI":"磷(mg)",
+            "copperDRI":"銅(mg)", "vitaminADRI":"視網醇當量(RE)(ug)", "betaCaroteneDRI":"β-胡蘿蔔素(ug)", "vitaminEDRI":"α-維生素E當量(α-TE)(mg)",
+            "vitaminB1DRI":"維生素B1(mg)", "vitaminB2DRI":"維生素B2(mg)", "vitaminB3DRI":"菸鹼素(mg)", "vitaminB6DRI":"維生素B6(mg)",
+            "vitaminB9DRI":"葉酸(ug)", "vitaminB12DRI":"維生素B12(ug)", "vitaminCDRI":"維生素C(mg)", "mufaDRI":"脂肪酸M總量(mg)",
+            "pufaDRI":"脂肪酸P總量(mg)", "laDRI":"亞麻油酸(18:2)(mg)", "alaDRI":"次亞麻油酸(18:3)(mg)", "ThrDRI":"酥胺酸(Thr)(mg)",
+            "CysDRI":"胱胺酸(Cys)(mg)", "ValDRI":"纈胺酸(Val)(mg)", "MetDRI":"甲硫胺酸(Met)(mg)", "IleDRI":"異白胺酸(Ile)(mg)",
+            "LeuDRI":"白胺酸(Leu)(mg)", "TyrDRI":"酪胺酸(Tyr)(mg)", "PheDRI":"苯丙胺酸(Phe)(mg)", "LysDRI":"離胺酸(Lys)(mg)",
+            "HisDRI":"組胺酸(His)(mg)", "TrpDRI":"色胺酸(Trp)(mg)", "sfaUL":"飽和脂肪(mg)", "transfatUL":"反式脂肪(mg)", "cholesterolUL":"膽固醇(mg)"
+        };
+
+        for (let key in mapping) {
+            let val = driMap[mapping[key]] || 0;
+            driValues[key] = val;
+            let el = document.getElementById(key);
+            if(el) el.textContent = val.toFixed(0) + (key.includes('Cal')?' kcal':' g');
+        }
+        driReady = true;
+    }
+
+    // ===== U1 PANEL EXECUTOR =====
+    function displayFoodData(food) {
+        if (!driReady) { setTimeout(() => displayFoodData(food), 100); return; }
+        let altName = food["Alternative Name"] || food["Food Name"] || '';
+        document.getElementById('pageTitle').innerHTML = altName + '<span>每 100g</span>';
+
+        nutrientFields.forEach(f => {
+            let raw = food[f.csvKey];
+            let val = raw === null || raw === undefined || isNaN(parseFloat(raw)) ? 0 : parseFloat(raw);
+            document.getElementById(f.id).textContent = val.toFixed(f.digits) + f.unit;
+            
+            if (f.driKey && driValues[f.driKey] > 0) {
+                let dv = (val / driValues[f.driKey]) * 100;
+                document.getElementById(f.id + "DV").textContent = dv.toFixed(1) + '%';
+            } else {
+                document.getElementById(f.id + "DV").textContent = '-';
+            }
+        });
+
+        let totalFA = (parseFloat(food["SFA (mg)"]) || 0) + (parseFloat(food["MUFA (mg)"]) || 0) + (parseFloat(food["PUFA (mg)"]) || 0);
+        updateCharts(
+            parseFloat(food["Carbs (g)"])||0, parseFloat(food["Protein (g)"])||0, parseFloat(food["Fat (g)"])||0, parseFloat(food["Water (g)"])||0, parseFloat(food["Ash (g)"])||0,
+            parseFloat(food["Carbs%"])||0, parseFloat(food["Protein%"])||0, parseFloat(food["Fat%"])||0, parseFloat(food["Alcohol%"])||0, parseFloat(food["CalCalories(kcal)"])||0,
+            parseFloat(food["SFA (mg)"])||0, parseFloat(food["MUFA (mg)"])||0, parseFloat(food["PUFA (mg)"])||0, totalFA, false
+        );
+        updateNutrientBarCharts(food["Food Name"], false);
+    }
+
+    // ===== U3 CORE CALCULATION ENGINE =====
+    function calculateMix() {
+        if (!driReady || foodData.length === 0) return;
+
+        let foodA = foodData.find(f => f["Food Name"] === document.getElementById("foodSelectA").value);
+        let foodB = foodData.find(f => f["Food Name"] === document.getElementById("foodSelectB").value);
+        let foodC = foodData.find(f => f["Food Name"] === document.getElementById("foodSelectC").value);
+
+        let rA = Math.max(0, parseFloat(document.getElementById("ratioA").value) || 0);
+        let rB = Math.max(0, parseFloat(document.getElementById("ratioB").value) || 0);
+        let rC = Math.max(0, parseFloat(document.getElementById("ratioC").value) || 0);
+
+        let totalWeight = (rA + rB + rC) * 100;
+        document.getElementById("u3PageTitle").innerHTML = `混合調配比例總計 <span>總重量: ${totalWeight.toFixed(1)}g</span>`;
+
+        let mixNutrients = {};
+        nutrientFields.forEach(f => {
+            let valA = foodA ? (parseFloat(foodA[f.csvKey]) || 0) : 0;
+            let valB = foodB ? (parseFloat(foodB[f.csvKey]) || 0) : 0;
+            let valC = foodC ? (parseFloat(foodC[f.csvKey]) || 0) : 0;
+
+            // 比例權重疊加
+            let sum = (valA * rA) + (valB * rB) + (valC * rC);
+            mixNutrients[f.id] = sum;
+
+            document.getElementById(`u3_${f.id}`).textContent = sum.toFixed(f.digits) + f.unit;
+
+            if (f.driKey && driValues[f.driKey] > 0) {
+                let dv = (sum / driValues[f.driKey]) * 100;
+                document.getElementById(`u3_${f.id}DV`).textContent = dv.toFixed(1) + '%';
+            } else {
+                document.getElementById(`u3_${f.id}DV`).textContent = '-';
+            }
+        });
+
+        // 換算 U3 混合熱量圓餅圖
+        let cCal = (foodA?(foodA["Carbs (g)"]||0):0)*4*rA + (foodB?(foodB["Carbs (g)"]||0):0)*4*rB + (foodC?(foodC["Carbs (g)"]||0):0)*4*rC;
+        let pCal = (foodA?(foodA["Protein (g)"]||0):0)*4*rA + (foodB?(foodB["Protein (g)"]||0):0)*4*rB + (foodC?(foodC["Protein (g)"]||0):0)*4*rC;
+        let fCal = (foodA?(foodA["Fat (g)"]||0):0)*8.9*rA + (foodB?(foodB["Fat (g)"]||0):0)*8.9*rB + (foodC?(foodC["Fat (g)"]||0):0)*8.9*rC;
+        let totalCal = cCal + pCal + fCal;
+
+        if (totalCal > 0) {
+            u3CalorieChart.data.datasets[0].data = [((cCal/totalCal)*100).toFixed(1), ((pCal/totalCal)*100).toFixed(1), ((fCal/totalCal)*100).toFixed(1), 0];
+            u3CalorieChart.options.centerText = totalCal.toFixed(0);
+            u3CalorieChart.update();
+        }
+
+        updateNutrientBarCharts("混合配方", true);
+    }
+
+    // ===== VISUAL BAR CHARTS SYNC =====
+    function updateNutrientBarCharts(name, isU3) {
+        let mainNutrientLabels = [], mainDVValues = [], aminoAcidLabels = [], aminoAcidDVValues = [];
+        let mainNutrients = ["熱量", "醣類(碳水化合物)", "膳食纖維", "蛋白質", "脂肪", "鈉", "鉀", "鈣", "鎂", "鐵", "鋅", "磷", "銅", "維生素A(RE)", "β-胡蘿蔔素", "維生素E(α-TE)", "維生素B1", "維生素B2", "維生素B3菸鹼素", "維生素B6", "維生素B9葉酸", "維生素B12", "維生素C", "單不飽脂肪酸MUFA", "多不飽脂肪酸PUFA", "亞麻油酸LA", "次亞麻油酸ALA"];
+        let essentialAminoAcids = ["酥胺酸(Thr)", "胱胺酸(Cys)", "纈胺酸(Val)", "甲硫胺酸(Met)", "異白胺酸(Ile)", "白胺酸(Leu)", "酪胺酸(Tyr)", "苯丙胺酸(Phe)", "離胺酸(Lys)", "組胺酸(His)", "色胺酸(Trp)"];
+
+        nutrientFields.forEach(f => {
+            let cell = document.getElementById((isU3 ? "u3_" : "") + f.id + "DV");
+            if (cell) {
+                let dv = parseFloat(cell.textContent);
+                if (!isNaN(dv)) {
+                    if (essentialAminoAcids.includes(f.name)) { aminoAcidLabels.push(f.name); aminoAcidDVValues.push(dv); }
+                    else if (mainNutrients.includes(f.name)) { mainNutrientLabels.push(f.name); mainDVValues.push(dv); }
+                }
+            }
+        });
+
+        let targetMainChart = isU3 ? 'u3MainNutrientBarChart' : 'mainNutrientBarChart';
+        let targetAminoChart = isU3 ? 'u3AminoAcidBarChart' : 'aminoAcidBarChart';
+
+        renderBarChart(targetMainChart, mainNutrientLabels, mainDVValues, `${name} - 綜合滿足率`, mainNutrientLabels.length);
+        renderBarChart(targetAminoChart, aminoAcidLabels, aminoAcidDVValues, `${name} - 必須胺基酸滿足率`, aminoAcidLabels.length);
+    }
+
+    function renderBarChart(id, labels, values, title, bars) {
+        let ctx = document.getElementById(id); if (!ctx) return;
+        ctx.parentElement.style.height = `${Math.max(bars * 35, 250)}px`;
+        if (window[id] && typeof window[id].destroy === 'function') window[id].destroy();
+
+        window[id] = new Chart(ctx.getContext('2d'), {
+            type: 'bar', data: { labels: labels, datasets: [{ label: 'DV (%)', data: values, backgroundColor: 'rgba(40, 145, 108, 0.6)', borderColor: 'rgba(45, 106, 79, 1)', borderWidth: 1 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true, position: 'top' }, y: { ticks: { font: { size: 13 } } } }, plugins: { legend: { display: false }, title: { display: true, text: title, font: { size: 16 } } } }
+        });
+    }
+
+    // ===== CHART.JS INITS =====
+    function initializeCharts() {
+        const centerTextPlugin = {
+            id: 'centerText',
+            afterDraw: (chart) => {
+                const ctx = chart.ctx; ctx.restore();
+                const centerX = chart.width / 2; const centerY = chart.height / 2;
+                ctx.font = 'bold 15px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#1B2D27';
+                let label = '';
+                if (chart.canvas.id.includes('calorie')) label = '修正熱量';
+                else if (chart.canvas.id.includes('fat')) label = '脂肪酸';
+                else if (chart.canvas.id.includes('mass')) label = '重量分佈';
+                ctx.fillText(label, centerX, centerY - 10);
+                ctx.font = 'bold 13px Arial'; ctx.fillText(`${chart.options.centerText} ${chart.canvas.id.includes('calorie')?'kcal':'g'}`, centerX, centerY + 10);
+                ctx.save();
+            }
+        };
+
+        const configGen = (id, labels, colors) => ({
+            type: 'doughnut', data: { labels: labels, datasets: [{ data: labels.map(()=>0), backgroundColor: colors }] },
+            options: { responsive: false, cutout: '65%', centerText: '0', plugins: { legend: { display: false }, datalabels: { formatter: (v)=>v>5?v.toFixed(0)+'%':'', font:{size:10, weight:'bold'} } } },
+            plugins: [centerTextPlugin, ChartDataLabels]
+        });
+
+        massChart = new Chart(document.getElementById('massChart'), configGen('massChart', ['醣類', '蛋白質', '脂肪', '水', '灰分'], ['#52B788','#FFB9AE','#FFCC00','#66CCFF','#CCCCCC']));
+        calorieChart = new Chart(document.getElementById('calorieChart'), configGen('calorieChart', ['醣類', '蛋白質', '脂肪', '酒精'], ['#52B788','#FFB9AE','#FFCC00','#95a5a6']));
+        fatChart = new Chart(document.getElementById('fatChart'), configGen('fatChart', ['飽和', '單元不飽和', '多元不飽和'], ['#FAC090','#C3D69B','#CCFF66']));
+        
+        // U3 專屬比例圓餅圖
+        u3CalorieChart = new Chart(document.getElementById('u3CalorieChart'), configGen('u3CalorieChart', ['醣類', '蛋白質', '脂肪', '酒精'], ['#52B788','#FFB9AE','#FFCC00','#95a5a6']));
+    }
+
+    function updateCharts(mc, mp, mf, mw, ma, CPCarbs, CPProtein, CPFat, CPAlcohol, CalCal, mSFA, mMUFA, mPUFA, totalFA) {
+        calorieChart.data.datasets[0].data = [CPCarbs*100, CPProtein*100, CPFat*100, CPAlcohol*100];
+        calorieChart.options.centerText = CalCal.toFixed(0); calorieChart.update();
+
+        if (!totalFA || totalFA <= 0) { document.getElementById("fatChart").style.display = "none"; } 
+        else {
+            document.getElementById("fatChart").style.display = "block";
+            fatChart.data.datasets[0].data = [(mSFA/totalFA*100), (mMUFA/totalFA*100), (mPUFA/totalFA*100)];
+            fatChart.options.centerText = (totalFA * 0.001).toFixed(1); fatChart.update();
+        }
+        massChart.data.datasets[0].data = [mc, mp, mf, mw, ma];
+        massChart.options.centerText = (mc+mp+mf+mw+ma).toFixed(0); massChart.update();
+    }
+
+    // 路由與不必要項目防呆隔離
+    function updateURL() {}
+    function openMessageLink() {}
+</script>
+</body>
+</html>
