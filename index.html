@@ -132,9 +132,6 @@
             padding: 24px 16px 48px;
         }
 
-        /* ===== MESSAGE TICKER (hidden) ===== */
-        #messageBox { display: none !important; }
-
         /* ===== TAB PANELS ===== */
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
@@ -209,6 +206,12 @@
             font-size: 14px;
             font-weight: 700;
             color: var(--brand-green);
+            display: flex;
+            justify-content: space-between;
+        }
+        .mix-row-title .calc-weight {
+            font-weight: bold;
+            color: #d35400;
         }
 
         /* ===== CHART SECTION ===== */
@@ -296,7 +299,7 @@
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: rgba(45,106,79,0.03) !important; }
 
-        /* Color Coding styles mapped onto tbody element rows */
+        /* 配色光譜渲染 */
         .table-body tr:nth-child(1) td  { color: #1B2D27; font-weight: bold; }
         .table-body tr:nth-child(2) td,
         .table-body tr:nth-child(3) td  { color: #1A5C2A; background: #F2FBF4; }
@@ -449,16 +452,11 @@
         </button>
         <button class="header-tab" onclick="switchTab('unit3', this)">
             <span class="tab-icon">🧪</span>
-            <span>配方比例</span>
+            <span>配方熱量逆推</span>
             <span class="tab-badge">U3</span>
         </button>
     </nav>
 </header>
-
-<div id="messageBox" onclick="openMessageLink()" style="display:none">
-    <p id="messageLine1"></p>
-    <p id="messageLine2"></p>
-</div>
 
 <div class="page-wrapper">
 
@@ -529,7 +527,10 @@
     <div id="panel-unit3" class="tab-panel">
         <div class="selector-card">
             <div class="mix-row">
-                <div class="mix-row-title">食品 A 來源配置</div>
+                <div class="mix-row-title">
+                    <span>食品 A 來源配置</span>
+                    <span id="weightLabelA" class="calc-weight">逆推克重: 0.0g</span>
+                </div>
                 <div class="selector-group">
                     <label>食品分類 A</label>
                     <select id="categorySelectA" onchange="onCategoryChangeMix('A')"></select>
@@ -538,13 +539,16 @@
                     <label>樣品名稱 A</label>
                     <select id="foodSelectA" onchange="calculateMix()"></select>
                 </div>
-                <div class="selector-group" style="flex:0 0 100px; min-width:80px;">
-                    <label>配方比例 A</label>
-                    <input type="number" id="ratioA" value="1" min="0" oninput="calculateMix()">
+                <div class="selector-group" style="flex:0 0 130px; min-width:100px;">
+                    <label>目標分配熱量 (kcal)</label>
+                    <input type="number" id="ratioA" value="480" min="0" oninput="calculateMix()">
                 </div>
             </div>
             <div class="mix-row">
-                <div class="mix-row-title">食品 B 來源配置</div>
+                <div class="mix-row-title">
+                    <span>食品 B 來源配置</span>
+                    <span id="weightLabelB" class="calc-weight">逆推克重: 0.0g</span>
+                </div>
                 <div class="selector-group">
                     <label>食品分類 B</label>
                     <select id="categorySelectB" onchange="onCategoryChangeMix('B')"></select>
@@ -553,13 +557,16 @@
                     <label>樣品名稱 B</label>
                     <select id="foodSelectB" onchange="calculateMix()"></select>
                 </div>
-                <div class="selector-group" style="flex:0 0 100px; min-width:80px;">
-                    <label>配方比例 B</label>
-                    <input type="number" id="ratioB" value="2" min="0" oninput="calculateMix()">
+                <div class="selector-group" style="flex:0 0 130px; min-width:100px;">
+                    <label>目標分配熱量 (kcal)</label>
+                    <input type="number" id="ratioB" value="960" min="0" oninput="calculateMix()">
                 </div>
             </div>
             <div class="mix-row">
-                <div class="mix-row-title">食品 C 來源配置</div>
+                <div class="mix-row-title">
+                    <span>食品 C 來源配置</span>
+                    <span id="weightLabelC" class="calc-weight">逆推克重: 0.0g</span>
+                </div>
                 <div class="selector-group">
                     <label>食品分類 C</label>
                     <select id="categorySelectC" onchange="onCategoryChangeMix('C')"></select>
@@ -568,22 +575,22 @@
                     <label>樣品名稱 C</label>
                     <select id="foodSelectC" onchange="calculateMix()"></select>
                 </div>
-                <div class="selector-group" style="flex:0 0 100px; min-width:80px;">
-                    <label>配方比例 C</label>
-                    <input type="number" id="ratioC" value="2" min="0" oninput="calculateMix()">
+                <div class="selector-group" style="flex:0 0 130px; min-width:100px;">
+                    <label>目標分配熱量 (kcal)</label>
+                    <input type="number" id="ratioC" value="960" min="0" oninput="calculateMix()">
                 </div>
             </div>
         </div>
 
         <div class="charts-section">
-            <div id="u3PageTitle" class="food-title">混合配方動態統計 <span>總重: 500.0g</span></div>
+            <div id="u3PageTitle" class="food-title">混合配方熱量逆推 <span>配方總熱量: 0 kcal | 總克重: 0.0g</span></div>
             <div class="chart-container">
                 <div class="chart-box"><canvas id="u3CalorieChart"></canvas></div>
             </div>
         </div>
 
         <div class="table-section">
-            <div class="section-header"><span class="icon">🧪</span> 混合比例配方營養素明細</div>
+            <div class="section-header"><span class="icon">🧪</span> 混合比例配方總營養素明細</div>
             <table>
                 <thead>
                     <tr>
@@ -597,7 +604,7 @@
         </div>
 
         <div class="bar-section">
-            <div class="section-header"><span class="icon">📈</span> 混合配方滿足率分析</div>
+            <div class="section-header"><span class="icon">📈</span> 混合配方滿足率分析 (長條圖)</div>
             <div id="u3NutrientChartContainer"><canvas id="u3MainNutrientBarChart" class="nutrientBarCanvas"></canvas></div>
             <div id="u3AminoAcidChartContainer"><canvas id="u3AminoAcidBarChart" class="nutrientBarCanvas"></canvas></div>
         </div>
@@ -655,7 +662,7 @@
         { id: "Arg", name: "精胺酸(Arg)", csvKey: "Arg (mg)", driKey: null, unit: " mg", digits: 0 },
         { id: "sfa", name: "飽和脂肪*", csvKey: "SFA (mg)", driKey: "sfaUL", unit: " mg", digits: 0 },
         { id: "transfat", name: "反式脂肪*", csvKey: "Trans Fat (mg)", driKey: "transfatUL", unit: " mg", digits: 0 },
-        { id: "cholesterol", name: "膽固醇*", csvKey: "膽固醇(mg)", driKey: "cholesterolUL", unit: " mg", digits: 0 }
+        { id: "cholesterol", name: "膽固醇*", csvKey: "Cholesterol (mg)", driKey: "cholesterolUL", unit: " mg", digits: 0 }
     ];
 
     let driReady = false;
@@ -663,18 +670,14 @@
     let DRIData = [];
     let driValues = {}; 
 
-    // 圖表實例指標
     let calorieChart, fatChart, massChart, u3CalorieChart;
-    let mainNutrientBarChart, aminoAcidBarChart, u3MainNutrientBarChart, u3AminoAcidBarChart;
 
-    // ===== TAB SWITCHING =====
     function switchTab(tabId, btn) {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.header-tab').forEach(b => b.classList.remove('active'));
         document.getElementById('panel-' + tabId).classList.add('active');
         btn.classList.add('active');
         
-        // 延時觸發圖表響應重繪
         setTimeout(() => {
             if (calorieChart) calorieChart.resize();
             if (fatChart) fatChart.resize();
@@ -683,7 +686,6 @@
         }, 50);
     }
 
-    // 初始化動態數據表格框架
     function buildTables() {
         const u1Body = document.getElementById("nutrientTableBody");
         const u3Body = document.getElementById("u3NutrientTableBody");
@@ -698,7 +700,6 @@
                 driBody.innerHTML += `<tr><td>${f.name}</td><td id="${f.driKey}"></td></tr>`;
             }
         });
-        // 補上精胺酸無基準線例外
         driBody.innerHTML += `<tr><td>精胺酸(Arg)</td><td>-</td></tr>`;
     }
 
@@ -708,7 +709,6 @@
         fetchData();  
     });
 
-    // 監聽國人標準切換
     document.getElementById("SexAgeSelect").addEventListener("change", (e) => {
         updateDailyValues(e.target.value);
         let event = new Event('change');   
@@ -728,7 +728,7 @@
     function fetchData() {
         fetch('food_data_a.csv').then(res => res.text()).then(csvText => {
             Papa.parse(csvText, { header: true, skipEmptyLines: true, dynamicTyping: true, complete: function (r) {
-                foodData = results = r.data;
+                foodData = r.data;
                 populateCategories('categorySelect');
                 populateCategories('categorySelectA');
                 populateCategories('categorySelectB');
@@ -794,7 +794,7 @@
         let headers = Object.keys(DRIData[0]).slice(1);
         headers.forEach(h => {
             let op = document.createElement("option"); op.value = h; op.textContent = h;
-            if(h === "女31至50歲（體重54kg）") op.selected = true;
+            if(h.includes("男 19至30歲") || h.includes("男19至30歲")) op.selected = true; // 預設對齊範例
             select.appendChild(op);
         });
         updateDailyValues(select.value);
@@ -805,7 +805,6 @@
         let driMap = {};
         DRIData.forEach(row => { driMap[row["SexAge"]] = row[selectedSexAge]; });
 
-        // 對照組全對映
         const mapping = {
             "caloriesDRI":"熱量(kcal)", "carbDRI":"總碳水化合物(g)", "fibreDRI":"膳食纖維(g)", "sugarUL":"糖質總量(g)",
             "proteinDRI":"粗蛋白(g)", "fatDRI":"粗脂肪(g)", "waterDRI":"水分(g)", "sodiumDRI":"鈉(mg)", "potassiumDRI":"鉀(mg)",
@@ -820,15 +819,15 @@
         };
 
         for (let key in mapping) {
-            let val = driMap[mapping[key]] || 0;
+            let val = parseFloat(driMap[mapping[key]]) || 0;
             driValues[key] = val;
             let el = document.getElementById(key);
-            if(el) el.textContent = val.toFixed(0) + (key.includes('Cal')?' kcal':' g');
+            if(el) el.textContent = val.toFixed(0) + (key.includes('Cal') || key.includes('cal') ? ' kcal' : ' g');
         }
         driReady = true;
     }
 
-    // ===== U1 PANEL EXECUTOR =====
+    // ===== U1 SINGLE FOOD SCRIPT =====
     function displayFoodData(food) {
         if (!driReady) { setTimeout(() => displayFoodData(food), 100); return; }
         let altName = food["Alternative Name"] || food["Food Name"] || '';
@@ -851,12 +850,12 @@
         updateCharts(
             parseFloat(food["Carbs (g)"])||0, parseFloat(food["Protein (g)"])||0, parseFloat(food["Fat (g)"])||0, parseFloat(food["Water (g)"])||0, parseFloat(food["Ash (g)"])||0,
             parseFloat(food["Carbs%"])||0, parseFloat(food["Protein%"])||0, parseFloat(food["Fat%"])||0, parseFloat(food["Alcohol%"])||0, parseFloat(food["CalCalories(kcal)"])||0,
-            parseFloat(food["SFA (mg)"])||0, parseFloat(food["MUFA (mg)"])||0, parseFloat(food["PUFA (mg)"])||0, totalFA, false
+            parseFloat(food["SFA (mg)"])||0, parseFloat(food["MUFA (mg)"])||0, parseFloat(food["PUFA (mg)"])||0, totalFA
         );
-        updateNutrientBarCharts(food["Food Name"], false);
+        updateNutrientBarCharts("mainNutrientBarChart", "aminoAcidBarChart", false);
     }
 
-    // ===== U3 CORE CALCULATION ENGINE =====
+    // ===== U3 CORE CALCULATION ENGINE (熱量逆推克重) =====
     function calculateMix() {
         if (!driReady || foodData.length === 0) return;
 
@@ -864,22 +863,39 @@
         let foodB = foodData.find(f => f["Food Name"] === document.getElementById("foodSelectB").value);
         let foodC = foodData.find(f => f["Food Name"] === document.getElementById("foodSelectC").value);
 
-        let rA = Math.max(0, parseFloat(document.getElementById("ratioA").value) || 0);
-        let rB = Math.max(0, parseFloat(document.getElementById("ratioB").value) || 0);
-        let rC = Math.max(0, parseFloat(document.getElementById("ratioC").value) || 0);
+        // 1. 取得使用者分配的目標熱量(kcal)
+        let targetCalA = Math.max(0, parseFloat(document.getElementById("ratioA").value) || 0);
+        let targetCalB = Math.max(0, parseFloat(document.getElementById("ratioB").value) || 0);
+        let targetCalC = Math.max(0, parseFloat(document.getElementById("ratioC").value) || 0);
 
-        let totalWeight = (rA + rB + rC) * 100;
-        document.getElementById("u3PageTitle").innerHTML = `混合調配比例總計 <span>總重量: ${totalWeight.toFixed(1)}g</span>`;
+        // 2. 獲取每種食材每100g官方標示的熱量
+        let eA = foodA ? (parseFloat(foodA["Calorie (kcal)"]) || 0) : 0;
+        let eB = foodB ? (parseFloat(foodB["Calorie (kcal)"]) || 0) : 0;
+        let eC = foodC ? (parseFloat(foodC["Calorie (kcal)"]) || 0) : 0;
 
-        let mixNutrients = {};
+        // 3. 逆推克重公式：(目標分配熱量 / 100g熱量) * 100
+        let weightA = eA > 0 ? (targetCalA / eA) * 100 : 0;
+        let weightB = eB > 0 ? (targetCalB / eB) * 100 : 0;
+        let weightC = eC > 0 ? (targetCalC / eC) * 100 : 0;
+
+        // 4. 更新前端各配置區塊的克重顯示標籤
+        document.getElementById("weightLabelA").textContent = `逆推克重: ${weightA.toFixed(1)}g`;
+        document.getElementById("weightLabelB").textContent = `逆推克重: ${weightB.toFixed(1)}g`;
+        document.getElementById("weightLabelC").textContent = `逆推克重: ${weightC.toFixed(1)}g`;
+
+        // 5. 更新大標題面板總統計
+        let totalMixWeight = weightA + weightB + weightC;
+        let totalInputCal = targetCalA + targetCalB + targetCalC;
+        document.getElementById("u3PageTitle").innerHTML = `混合配方熱量逆推 <span>配方總熱量: ${totalInputCal.toFixed(0)} kcal | 總克重: ${totalMixWeight.toFixed(1)}g</span>`;
+
+        // 6. 依據克重放大比例，加權運算總營養素成分明細與DV%
         nutrientFields.forEach(f => {
             let valA = foodA ? (parseFloat(foodA[f.csvKey]) || 0) : 0;
             let valB = foodB ? (parseFloat(foodB[f.csvKey]) || 0) : 0;
             let valC = foodC ? (parseFloat(foodC[f.csvKey]) || 0) : 0;
 
-            // 比例權重疊加
-            let sum = (valA * rA) + (valB * rB) + (valC * rC);
-            mixNutrients[f.id] = sum;
+            // 總量 = 各單品每100g含量 * (單品實際克重 / 100)
+            let sum = (valA * (weightA / 100)) + (valB * (weightB / 100)) + (valC * (weightC / 100));
 
             document.getElementById(`u3_${f.id}`).textContent = sum.toFixed(f.digits) + f.unit;
 
@@ -891,25 +907,31 @@
             }
         });
 
-        // 換算 U3 混合熱量圓餅圖
-        let cCal = (foodA?(foodA["Carbs (g)"]||0):0)*4*rA + (foodB?(foodB["Carbs (g)"]||0):0)*4*rB + (foodC?(foodC["Carbs (g)"]||0):0)*4*rC;
-        let pCal = (foodA?(foodA["Protein (g)"]||0):0)*4*rA + (foodB?(foodB["Protein (g)"]||0):0)*4*rB + (foodC?(foodC["Protein (g)"]||0):0)*4*rC;
-        let fCal = (foodA?(foodA["Fat (g)"]||0):0)*8.9*rA + (foodB?(foodB["Fat (g)"]||0):0)*8.9*rB + (foodC?(foodC["Fat (g)"]||0):0)*8.9*rC;
-        let totalCal = cCal + pCal + fCal;
+        // 7. 混合配方三大熱量貢獻比圓餅圖更新 (基於克重逆推後的三大成份產生之修正熱量)
+        let carbsCalSum = (foodA?(foodA["Carbs (g)"]||0):0)*4*(weightA/100) + (foodB?(foodB["Carbs (g)"]||0):0)*4*(weightB/100) + (foodC?(foodC["Carbs (g)"]||0):0)*4*(weightC/100);
+        let proteinCalSum = (foodA?(foodA["Protein (g)"]||0):0)*4*(weightA/100) + (foodB?(foodB["Protein (g)"]||0):0)*4*(weightB/100) + (foodC?(foodC["Protein (g)"]||0):0)*4*(weightC/100);
+        let fatCalSum = (foodA?(foodA["Fat (g)"]||0):0)*8.9*(weightA/100) + (foodB?(foodB["Fat (g)"]||0):0)*8.9*(weightB/100) + (foodC?(foodC["Fat (g)"]||0):0)*8.9*(weightC/100);
+        let calculatedTotalCal = carbsCalSum + proteinCalSum + fatCalSum;
 
-        if (totalCal > 0) {
-            u3CalorieChart.data.datasets[0].data = [((cCal/totalCal)*100).toFixed(1), ((pCal/totalCal)*100).toFixed(1), ((fCal/totalCal)*100).toFixed(1), 0];
-            u3CalorieChart.options.centerText = totalCal.toFixed(0);
+        if (calculatedTotalCal > 0) {
+            u3CalorieChart.data.datasets[0].data = [
+                ((carbsCalSum / calculatedTotalCal) * 100).toFixed(1),
+                ((proteinCalSum / calculatedTotalCal) * 100).toFixed(1),
+                ((fatCalSum / calculatedTotalCal) * 100).toFixed(1),
+                0
+            ];
+            u3CalorieChart.options.centerText = calculatedTotalCal.toFixed(0);
             u3CalorieChart.update();
         }
 
-        updateNutrientBarCharts("混合配方", true);
+        // 8. 刷新 U3 長條圖
+        updateNutrientBarCharts("u3MainNutrientBarChart", "u3AminoAcidBarChart", true);
     }
 
     // ===== VISUAL BAR CHARTS SYNC =====
-    function updateNutrientBarCharts(name, isU3) {
+    function updateNutrientBarCharts(mainChartId, aminoChartId, isU3) {
         let mainNutrientLabels = [], mainDVValues = [], aminoAcidLabels = [], aminoAcidDVValues = [];
-        let mainNutrients = ["熱量", "醣類(碳水化合物)", "膳食纖維", "蛋白質", "脂肪", "鈉", "鉀", "鈣", "鎂", "鐵", "鋅", "磷", "銅", "維生素A(RE)", "β-胡蘿蔔素", "維生素E(α-TE)", "維生素B1", "維生素B2", "維生素B3菸鹼素", "維生素B6", "維生素B9葉酸", "維生素B12", "維生素C", "單不飽脂肪酸MUFA", "多不飽脂肪酸PUFA", "亞麻油酸LA", "次亞麻油酸ALA"];
+        let mainNutrients = ["熱量", "醣類(碳水化合物)", "膳防纖維", "蛋白質", "脂肪", "鈉", "鉀", "鈣", "鎂", "鐵", "鋅", "磷", "銅", "維生素A(RE)", "β-胡蘿蔔素", "維生素E(α-TE)", "維生素B1", "維生素B2", "維生素B3菸鹼素", "維生素B6", "維生素B9葉酸", "維生素B12", "維生素C", "單不飽脂肪酸MUFA", "多不飽脂肪酸PUFA", "亞麻油酸LA", "次亞麻油酸ALA"];
         let essentialAminoAcids = ["酥胺酸(Thr)", "胱胺酸(Cys)", "纈胺酸(Val)", "甲硫胺酸(Met)", "異白胺酸(Ile)", "白胺酸(Leu)", "酪胺酸(Tyr)", "苯丙胺酸(Phe)", "離胺酸(Lys)", "組胺酸(His)", "色胺酸(Trp)"];
 
         nutrientFields.forEach(f => {
@@ -923,11 +945,10 @@
             }
         });
 
-        let targetMainChart = isU3 ? 'u3MainNutrientBarChart' : 'mainNutrientBarChart';
-        let targetAminoChart = isU3 ? 'u3AminoAcidBarChart' : 'aminoAcidBarChart';
-
-        renderBarChart(targetMainChart, mainNutrientLabels, mainDVValues, `${name} - 綜合滿足率`, mainNutrientLabels.length);
-        renderBarChart(targetAminoChart, aminoAcidLabels, aminoAcidDVValues, `${name} - 必須胺基酸滿足率`, aminoAcidLabels.length);
+        renderBarChart(mainChartId, mainNutrientLabels, mainDVValues, `綜合滿足率柱狀分析`, mainNutrientLabels.length);
+        if (aminoAcidDVValues.length > 0) {
+            renderBarChart(aminoChartId, aminoAcidLabels, aminoAcidDVValues, `必須胺基酸滿足率柱狀分析`, aminoAcidLabels.length);
+        }
     }
 
     function renderBarChart(id, labels, values, title, bars) {
@@ -941,7 +962,7 @@
         });
     }
 
-    // ===== CHART.JS INITS =====
+    // ===== CHART.JS PIE CONFIG INITS =====
     function initializeCharts() {
         const centerTextPlugin = {
             id: 'centerText',
@@ -968,28 +989,17 @@
         massChart = new Chart(document.getElementById('massChart'), configGen('massChart', ['醣類', '蛋白質', '脂肪', '水', '灰分'], ['#52B788','#FFB9AE','#FFCC00','#66CCFF','#CCCCCC']));
         calorieChart = new Chart(document.getElementById('calorieChart'), configGen('calorieChart', ['醣類', '蛋白質', '脂肪', '酒精'], ['#52B788','#FFB9AE','#FFCC00','#95a5a6']));
         fatChart = new Chart(document.getElementById('fatChart'), configGen('fatChart', ['飽和', '單元不飽和', '多元不飽和'], ['#FAC090','#C3D69B','#CCFF66']));
-        
-        // U3 專屬比例圓餅圖
         u3CalorieChart = new Chart(document.getElementById('u3CalorieChart'), configGen('u3CalorieChart', ['醣類', '蛋白質', '脂肪', '酒精'], ['#52B788','#FFB9AE','#FFCC00','#95a5a6']));
     }
 
-    function updateCharts(mc, mp, mf, mw, ma, CPCarbs, CPProtein, CPFat, CPAlcohol, CalCal, mSFA, mMUFA, mPUFA, totalFA) {
+    function updateCharts(mc, mp, mf, mw, ma, CPCarbs, CPProtein, CPFat, CPAlcohol, CalCal) {
         calorieChart.data.datasets[0].data = [CPCarbs*100, CPProtein*100, CPFat*100, CPAlcohol*100];
         calorieChart.options.centerText = CalCal.toFixed(0); calorieChart.update();
-
-        if (!totalFA || totalFA <= 0) { document.getElementById("fatChart").style.display = "none"; } 
-        else {
-            document.getElementById("fatChart").style.display = "block";
-            fatChart.data.datasets[0].data = [(mSFA/totalFA*100), (mMUFA/totalFA*100), (mPUFA/totalFA*100)];
-            fatChart.options.centerText = (totalFA * 0.001).toFixed(1); fatChart.update();
-        }
         massChart.data.datasets[0].data = [mc, mp, mf, mw, ma];
         massChart.options.centerText = (mc+mp+mf+mw+ma).toFixed(0); massChart.update();
     }
 
-    // 路由與不必要項目防呆隔離
     function updateURL() {}
-    function openMessageLink() {}
 </script>
 </body>
 </html>
