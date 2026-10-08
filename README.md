@@ -1,66 +1,124 @@
-# TZ-NutriQ｜食品營養成分查詢
+# TZnutirc｜營養智慧 × 大腦健康
 
-TZ-NutriQ 是以瀏覽器為基礎的食品營養成分查詢與比較工具。使用者可以在頁面中選擇食物與營養項目，查看資料表、營養指標與圖表化結果。專案採純 HTML、CSS 與 JavaScript 實作，不需要後端伺服器或建置工具即可部署。
+**TZnutirc** 整合兩大核心功能：
+
+1. **食品營養成分查詢** — 單品查詢、國人膳食標準、配方熱量逆推與圖表視覺化  
+2. **Brain Lab 大腦年齡小遊戲** — 麻將消除、2048 等益智模組，訓練空間推理與工作記憶
+
+專案採純 HTML、CSS、JavaScript 實作，無需後端或建置工具即可部署。
+
+---
+
+## 快速開始
+
+| 頁面 | 路徑 | 說明 |
+|------|------|------|
+| **入口首頁** | [`portal.html`](portal.html) | 雙核心導覽（營養 × 大腦） |
+| **營養查詢** | [`index.html`](index.html) | TZ 營養工具（U1／U2／U3） |
+| **大腦年齡** | [`sirt-game/index.html`](sirt-game/index.html) | Brain Lab 遊戲入口 |
+| 麻將消除 | [`sirt-game/demo/`](sirt-game/demo/) | 五關漸進麻將接龍 |
+| 2048 | [`sirt-game/games/2048/`](sirt-game/games/2048/) | 數字滑動合併 |
+
+> 建議以 `portal.html` 作為對外入口；營養頁 header 亦含「🧠 大腦年齡」選單連結。
+
+---
 
 ## 主要功能
 
-| 功能 | 說明 |
-| --- | --- |
-| 食品查詢 | 以本機 CSV 資料載入食品與營養成分，提供選擇與檢視介面。 |
-| 營養比較 | 依選定食品與營養項目呈現比較結果。 |
-| 圖表視覺化 | 使用 Chart.js 與資料標籤外掛呈現圖表。 |
-| 分頁／版本實驗 | `index.html` 為主要入口；`index_nutric_v1.html`、`index_nutric_v2.html` 與 `index_nutric_v4.html` 保留不同版本的介面實驗。 |
-| 靜態部署 | 透過 GitHub Pages workflow 發布整個 repository 的靜態檔案。 |
+### 營養查詢（index.html）
 
-## 技術與外部資源
+| 模組 | 說明 |
+|------|------|
+| 單品查詢 (U1) | 以本機 CSV 載入食品與營養成分，檢視表格與圖表 |
+| 國人標準 (U2) | 對照國人膳食營養素參考攝取量（DRI） |
+| 配方熱量逆推 (U3) | 多食材混合配方的熱量與營養估算 |
+| 圖表視覺化 | Chart.js 圓餅／長條圖與資料標籤 |
 
-- 原生 HTML、CSS 與 JavaScript
-- [Chart.js](https://www.chartjs.org/)
-- [chartjs-plugin-datalabels](https://chartjs-plugin-datalabels.netlify.app/)
-- [Papa Parse](https://www.papaparse.com/)：解析 CSV 資料
-- Google Fonts：Noto Sans TC 與 Inter
+### Brain Lab（sirt-game/）
 
-外部前端套件目前由 CDN 載入，因此預覽與正式部署需要可連線至相應 CDN。若要支援完全離線使用，應改為將相依資源納入專案並同步更新授權與版本資訊。
+| 遊戲 | 狀態 | 訓練重點 |
+|------|------|----------|
+| 麻將消除 | 已上線 | 空間推理、觀察力 |
+| 2048 | 已上線 | 工作記憶、規劃 |
+| 記憶配對 | 規劃中 | 短期記憶 |
 
-## 資料檔案
+---
+
+## 專案結構
 
 ```text
 nutric1688/
-├── index.html              # 主要使用者入口
-├── index_nutric_v1.html    # 歷史／實驗版本 1
-├── index_nutric_v2.html    # 歷史／實驗版本 2
-├── index_nutric_v4.html    # 歷史／實驗版本 4
-├── DRI.csv                 # 營養素參考資料
-├── Message.csv             # 介面訊息或文字資料
-├── food_data_a.csv         # 食品營養資料
-├── logo.png                # 品牌圖示
-└── .github/workflows/      # GitHub Actions 部署設定
+├── portal.html              # 入口首頁（TZnutirc 品牌）
+├── index.html               # 營養查詢主工具
+├── brain-nav.js             # 營養頁注入「大腦年齡」選單
+├── logo.png                 # 品牌圖示
+├── DRI.csv                  # 營養素參考資料
+├── Message.csv              # 介面訊息文字
+├── food_data_a.csv          # 食品營養資料
+├── index_nutric_v1.html     # 歷史／實驗版本
+├── index_nutric_v2.html
+├── index_nutric_v4.html
+├── sirt-game/               # Brain Lab（整合自 sirt-game repo）
+│   ├── index.html           # 大腦年齡遊戲入口
+│   ├── demo/                # 麻將消除
+│   └── games/2048/          # 2048
+├── PORTAL.md                # 整合說明（開發用）
+└── .github/workflows/       # GitHub Pages 部署
 ```
 
-CSV 欄位若有增刪或改名，必須同步檢查 `index.html` 中的欄位讀取、篩選與圖表邏輯；否則頁面可能載入成功但顯示空白或不完整結果。
+---
+
+## 技術與外部資源
+
+- 原生 HTML、CSS、JavaScript
+- [Chart.js](https://www.chartjs.org/) + [chartjs-plugin-datalabels](https://chartjs-plugin-datalabels.netlify.app/)
+- [Papa Parse](https://www.papaparse.com/)：解析 CSV
+- Google Fonts：Noto Sans TC、Inter
+
+外部套件由 CDN 載入，預覽與正式部署需可連線至對應 CDN。若要完全離線使用，請將相依資源納入專案。
+
+---
 
 ## 本機預覽
 
-此專案會以 `fetch()` 讀取 CSV，不能直接雙擊 `index.html` 使用 `file://` 開啟。請在 repository 根目錄啟動簡易 HTTP 伺服器：
+本專案以 `fetch()` 讀取 CSV，**不可**直接用 `file://` 開啟。請在 repository 根目錄啟動 HTTP 伺服器：
 
 ```bash
 python3 -m http.server 8000
 ```
 
-接著開啟 <http://localhost:8000/>。若要預覽其他版本，則直接造訪相應路徑，例如 <http://localhost:8000/index_nutric_v4.html>。
+然後開啟：
+
+- 入口：<http://localhost:8000/portal.html>
+- 營養：<http://localhost:8000/index.html>
+- 大腦：<http://localhost:8000/sirt-game/index.html>
+
+---
 
 ## GitHub Pages 部署
 
-`.github/workflows/static.yml` 會在推送至 `main` 分支或手動執行 workflow 時，將 repository 根目錄部署至 GitHub Pages。啟用方式如下：
+`.github/workflows/static.yml` 會在推送至 `main` 或手動執行 workflow 時，將根目錄部署至 GitHub Pages。
 
-1. 在 repository 的 **Settings → Pages** 將來源設為 **GitHub Actions**。
-2. 推送至 `main`，或從 **Actions** 手動執行 **Deploy static content to Pages**。
-3. 開啟 GitHub Pages 顯示的網址，確認 `index.html`、CSV 與圖片均可載入。
+1. **Settings → Pages** → 來源設為 **GitHub Actions**
+2. 推送至 `main`，或從 **Actions** 手動執行 **Deploy static content to Pages**
+3. 建議將站點首頁導向 `portal.html`（可於 Pages 設定或另設 `index` 轉址）
+
+---
 
 ## 驗證清單
 
-發布前請在桌面與行動瀏覽器各檢查一次：食品選單是否有資料、CSV 讀取是否成功、圖表是否正常繪製、不同版本頁面是否能開啟，以及瀏覽器主控台是否出現 CORS、404 或欄位解析錯誤。
+發布前請在桌面與行動瀏覽器檢查：
+
+- [ ] `portal.html` 雙卡導覽與連結正常
+- [ ] 營養頁三個模組（U1／U2／U3）資料與圖表可載入
+- [ ] header「🧠 大腦年齡」可進入 Brain Lab
+- [ ] 麻將消除、2048 可遊玩
+- [ ] 瀏覽器主控台無 CORS、404 或 CSV 解析錯誤
+
+---
 
 ## 資料與使用限制
 
-本專案提供的是營養資訊查詢與展示介面，不是醫療診斷或個人化飲食處方。正式對外使用前，請確認 CSV 資料的來源、更新日期、單位與適用地區，並由具備相關資格的人員審核營養與健康表述。repository 目前未附獨立 LICENSE；如需重用程式碼、資料或圖像，請先確認授權範圍。
+本專案提供營養資訊查詢與休閒益智體驗，**非正式醫療診斷或個人化飲食處方**。正式對外使用前，請確認 CSV 資料來源、更新日期、單位與適用地區，並由具備相關資格者審核營養與健康表述。
+
+Repository 目前未附獨立 LICENSE；重用程式碼、資料或圖像前請先確認授權範圍。
