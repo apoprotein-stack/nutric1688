@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>麻將消除 · 載入中</title>
+<style>
+body{margin:0;background:#123d2b;color:#eaf5ee;font-family:system-ui,"Noto Sans TC",sans-serif;
+display:grid;place-items:center;height:100vh;text-align:center}
+#m{opacity:.9;font-size:15px}
+</style>
+</head><body>
+<p id="m">載入遊戲中…</p>
+<script type="module">
+try {
+  const texts = await Promise.all(
+    [0,1,2,3].map(i => fetch('./part' + i + '.txt').then(r => {
+      if (!r.ok) throw new Error('part' + i + ' HTTP ' + r.status);
+      return r.text();
+    }))
+  );
+  const b64 = texts.join('').replace(/\s+/g, '');
+  const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const stream = new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip'));
+  const html = await new Response(stream).text();
+  document.open();
+  document.write(html);
+  document.close();
+} catch (e) {
+  document.getElementById('m').textContent = '載入失敗：' + (e && e.message ? e.message : e);
+  console.error(e);
+}
+</script>
+</body></html>
