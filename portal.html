@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TZ-NutriQ — 營養智慧與大腦健康</title>
+<link rel="icon" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand-green:#2D6A4F;--brand-green-light:#40916C;--brand-green-pale:#D8F3DC;--brand-gold:#F4A261;--bg-main:#F7FAF8;--bg-card:#fff;--text-primary:#1B2D27;--text-secondary:#5A7268;--text-muted:#8FA89F;--border:#D4E6DC;--shadow:0 4px 24px rgba(45,106,79,.1);--shadow-lg:0 12px 40px rgba(45,106,79,.16);--radius:18px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC','Inter',Arial,sans-serif;background:var(--bg-main);color:var(--text-primary);min-height:100vh}
+.site-header{background:linear-gradient(135deg,var(--brand-green),var(--brand-green-light));padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:68px;box-shadow:0 2px 16px rgba(45,106,79,.25);position:sticky;top:0;z-index:100}
+.logo-wrap{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-img{width:42px;height:42px;border-radius:10px;background:#fff;padding:3px;object-fit:contain}
+.brand-name{font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:#fff}
+.brand-sub{font-size:12px;color:rgba(255,255,255,.75);margin-top:1px}
+.header-nav{display:flex;gap:8px}
+.header-link{color:rgba(255,255,255,.85);text-decoration:none;font-size:14px;font-weight:600;padding:8px 14px;border-radius:8px}
+.header-link:hover{background:rgba(255,255,255,.15);color:#fff}
+.hero{padding:64px 20px 48px;text-align:center;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(64,145,108,.18),transparent),var(--bg-main)}
+.hero-badge{display:inline-flex;background:var(--brand-green-pale);color:var(--brand-green);font-size:13px;font-weight:700;padding:6px 14px;border-radius:999px;margin-bottom:18px}
+.hero h1{font-size:clamp(28px,5vw,42px);font-weight:900;line-height:1.25;margin-bottom:14px}
+.hero h1 span{background:linear-gradient(135deg,var(--brand-green),var(--brand-green-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:16px;color:var(--text-secondary);max-width:520px;margin:0 auto 28px;line-height:1.7}
+.hero-cta-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;border:none;cursor:pointer;font-family:inherit;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:linear-gradient(135deg,var(--brand-green),var(--brand-green-light));color:#fff;box-shadow:0 4px 16px rgba(45,106,79,.3)}
+.btn-secondary{background:#fff;color:var(--brand-green);border:2px solid var(--border);box-shadow:var(--shadow)}
+.section{max-width:960px;margin:0 auto;padding:12px 20px 56px}
+.section-title{text-align:center;font-size:13px;font-weight:700;color:var(--text-muted);letter-spacing:1.2px;margin-bottom:20px;text-transform:uppercase}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
+.feature-card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 26px 24px;display:flex;flex-direction:column;transition:transform .2s,box-shadow .25s;border:1.5px solid transparent}
+.feature-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--border)}
+.card-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px;background:var(--brand-green-pale)}
+.game-card .card-icon{background:linear-gradient(135deg,#FFF3E6,#FFDDD2)}
+.feature-card h2{font-size:20px;font-weight:800;margin-bottom:8px}
+.feature-card p{font-size:14px;color:var(--text-secondary);line-height:1.65;flex:1;margin-bottom:20px}
+.card-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.tag{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:#F0F7F3;color:var(--brand-green)}
+.game-card .tag{background:#FFF5EB;color:#C45C26}
+.card-action{font-size:14px;font-weight:700;color:var(--brand-green);text-decoration:none}
+.game-card .card-action{color:#C45C26}
+.site-footer{text-align:center;padding:28px 20px 36px;font-size:13px;color:var(--text-muted);border-top:1px solid var(--border)}
+@media(max-width:640px){.site-header{padding:0 14px;height:58px}.brand-name{font-size:16px}.brand-sub{display:none}.hero{padding:40px 16px 32px}}
+</style>
+</head>
+<body>
+<header class="site-header">
+<a class="logo-wrap" href="portal.html"><img class="logo-img" src="logo.png" alt="TZ-NutriQ"><div><div class="brand-name">TZ-NutriQ</div><div class="brand-sub">營養智慧 × 大腦健康</div></div></a>
+<nav class="header-nav">
+<a class="header-link" href="index.html">營養查詢</a>
+<a class="header-link" href="sirt-game/index.html">大腦年齡</a>
+</nav>
+</header>
+<section class="hero">
+<div class="hero-badge">🌿 健康生活從了解開始</div>
+<h1>探索營養，<span>測試大腦</span></h1>
+<p>TZ-NutriQ 整合食品營養成分查詢與 Brain Lab 益智小遊戲，幫助你更認識身體與大腦的狀態。</p>
+<div class="hero-cta-row">
+<a class="btn btn-primary" href="index.html">🥗 開始營養查詢</a>
+<a class="btn btn-secondary" href="sirt-game/index.html">🧠 測試大腦年齡</a>
+</div>
+</section>
+<section class="section">
+<div class="section-title">選擇功能</div>
+<div class="cards">
+<article class="feature-card">
+<div class="card-icon">🥗</div>
+<h2>食品營養查詢</h2>
+<p>查詢單品營養、國人膳食參考攝取量，並支援配方熱量逆推與圖表視覺化。</p>
+<div class="card-meta"><span class="tag">單品查詢</span><span class="tag">國人標準</span><span class="tag">配方逆推</span></div>
+<a class="card-action" href="index.html">進入營養工具 →</a>
+</article>
+<article class="feature-card game-card">
+<div class="card-icon">🧠</div>
+<h2>小遊戲・測試你的大腦年齡</h2>
+<p>進入 Brain Lab：麻將消除、2048 等益智模組，訓練空間推理、觀察力與工作記憶。</p>
+<div class="card-meta"><span class="tag">麻將消除</span><span class="tag">2048</span><span class="tag">可擴充</span></div>
+<a class="card-action" href="sirt-game/index.html">開始挑戰 →</a>
+</article>
+</div>
+</section>
+<footer class="site-footer">
+<p>TZ-NutriQ — 營養資訊與認知趣味工具，非正式醫療診斷。</p>
+</footer>
+</body>
+</html>
