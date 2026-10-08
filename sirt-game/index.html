@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="測測你的大腦年齡！透過趣味益智小遊戲挑戰反應、記憶與空間推理。">
+<title>測測你的大腦年齡 · Brain Lab</title>
+<style>
+:root {
+  --bg: #0b1220; --bg2: #121a2b; --card: rgba(255,255,255,.06); --card-border: rgba(255,255,255,.10);
+  --text: #eef3ff; --muted: #9aa8c7; --accent: #6ee7ff; --accent2: #a78bfa; --warm: #fbbf24; --soon: #94a3b8;
+  --radius: 18px; --shadow: 0 12px 40px rgba(0,0,0,.35);
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{color:var(--text);background:radial-gradient(1200px 600px at 10% -10%,rgba(110,231,255,.18),transparent 55%),radial-gradient(900px 500px at 90% 0%,rgba(167,139,250,.16),transparent 50%),linear-gradient(180deg,var(--bg),var(--bg2));line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{width:min(960px,100%);margin:0 auto;padding:28px 18px 48px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.5px}
+.brand-mark{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;box-shadow:0 6px 18px rgba(110,231,255,.25);font-size:18px}
+.nav-links{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.nav-hint{font-size:12px;color:var(--muted)}
+.nav-back{font-size:12px;color:var(--accent);padding:6px 12px;border-radius:999px;background:rgba(110,231,255,.1);border:1px solid rgba(110,231,255,.25)}
+.hero{text-align:center;padding:18px 8px 32px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(110,231,255,.10);border:1px solid rgba(110,231,255,.25);color:var(--accent);font-size:12px;font-weight:600;margin-bottom:14px}
+.hero h1{margin:0 0 10px;font-size:clamp(28px,6vw,42px);line-height:1.2;letter-spacing:1px}
+.hero h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2),var(--warm));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:0 auto 22px;max-width:520px;color:var(--muted);font-size:15px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:12px;font-weight:700;transition:transform .12s,box-shadow .12s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{color:#0b1220;background:linear-gradient(135deg,var(--accent),#38bdf8);box-shadow:0 8px 24px rgba(56,189,248,.28)}
+.btn-ghost{color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--card-border)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 28px}
+.stat{text-align:center;padding:14px 10px;border-radius:14px;background:var(--card);border:1px solid var(--card-border)}
+.stat b{display:block;font-size:20px;color:var(--accent)}
+.stat span{font-size:12px;color:var(--muted)}
+.section-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 14px}
+.section-title h2{margin:0;font-size:18px}
+.section-title span{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{position:relative;display:flex;flex-direction:column;min-height:220px;padding:18px;border-radius:var(--radius);background:var(--card);border:1px solid var(--card-border);box-shadow:var(--shadow);overflow:hidden;transition:transform .15s,border-color .15s}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.7}
+.card.playable:hover{transform:translateY(-3px);border-color:rgba(110,231,255,.35)}
+.card.soon{opacity:.72}
+.card.soon::before{background:linear-gradient(90deg,#64748b,#94a3b8)}
+.card-icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:24px;margin-bottom:12px;background:rgba(110,231,255,.12);border:1px solid rgba(110,231,255,.2)}
+.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:0;flex:1;font-size:13px;color:var(--muted)}
+.card-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px;flex-wrap:wrap}
+.tag{display:inline-flex;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:600}
+.tag-live{color:#065f46;background:rgba(52,211,153,.9)}
+.tag-soon{color:#1e293b;background:rgba(148,163,184,.85)}
+.tag-skill{color:var(--accent);background:rgba(110,231,255,.12);border:1px solid rgba(110,231,255,.2)}
+.card-cta{font-size:13px;font-weight:700;color:var(--accent)}
+.card.soon .card-cta{color:var(--soon)}
+.how{margin-top:36px;padding:20px;border-radius:var(--radius);background:rgba(255,255,255,.04);border:1px solid var(--card-border)}
+.how h2{margin:0 0 14px;font-size:16px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.step{padding:12px;border-radius:12px;background:rgba(0,0,0,.2)}
+.step b{display:block;color:var(--accent);font-size:12px;margin-bottom:4px}
+.step span{font-size:13px;color:var(--muted)}
+footer{margin-top:36px;text-align:center;font-size:12px;color:var(--muted)}
+@media(max-width:520px){.stats{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="brand-mark">🧠</div><div>Brain Lab</div></div>
+    <div class="nav-links">
+      <a class="nav-back" href="../portal.html">← TZ-NutriQ</a>
+      <a class="nav-back" href="../index.html">營養查詢</a>
+      <span class="nav-hint">益智小遊戲合集</span>
+    </div>
+  </header>
+  <section class="hero">
+    <div class="badge">⚡ 30 秒開始挑戰</div>
+    <h1>測測你的<br><span>大腦年齡</span></h1>
+    <p>透過趣味益智關卡，挑戰反應速度、空間推理與專注力。選一款遊戲開始。</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="demo/index.html">開始麻將消除 →</a>
+      <a class="btn btn-ghost" href="games/2048/index.html">玩 2048 →</a>
+    </div>
+  </section>
+  <div class="stats">
+    <div class="stat"><b>5</b><span>麻將漸進關卡</span></div>
+    <div class="stat"><b>2</b><span>已上線模組</span></div>
+    <div class="stat"><b>0</b><span>需註冊即可玩</span></div>
+  </div>
+  <section id="games">
+    <div class="section-title"><h2>遊戲模組</h2><span>可擴充架構</span></div>
+    <div class="grid" id="gameGrid"></div>
+  </section>
+  <section class="how">
+    <h2>怎麼測「大腦年齡」？</h2>
+    <div class="steps">
+      <div class="step"><b>STEP 1</b><span>選擇一款訓練項目</span></div>
+      <div class="step"><b>STEP 2</b><span>完成關卡，觀察分數與用時</span></div>
+      <div class="step"><b>STEP 3</b><span>對照表現，感受當下的腦力狀態</span></div>
+    </div>
+  </section>
+  <footer>
+    <p>Brain Lab · 益智小遊戲入口 · 隸屬 TZ-NutriQ</p>
+    <p style="margin-top:6px">本站為休閒益智體驗，非醫療診斷工具。</p>
+  </footer>
+</div>
+<script>
+const GAME_MODULES = [
+  {id:'mahjong-solitaire',title:'麻將消除',desc:'經典上海麻將接龍。訓練空間推理與觀察力。五關漸進，消牌露出風景底圖。',icon:'🀄',status:'live',href:'demo/index.html',skills:['空間推理','觀察力'],cta:'立即遊玩'},
+  {id:'2048',title:'2048',desc:'數字滑動合併。訓練規劃能力與工作記憶。支援鍵盤與觸控滑動，可復原上一步。',icon:'🔢',status:'live',href:'games/2048/index.html',skills:['工作記憶','規劃'],cta:'立即遊玩'},
+  {id:'memory-match',title:'記憶配對',desc:'翻牌找相同圖案。訓練短期記憶與注意力。規劃中。',icon:'🃏',status:'soon',href:null,skills:['記憶力'],cta:'即將推出'}
+];
+function renderModules(){
+  const grid=document.getElementById('gameGrid');
+  grid.innerHTML=GAME_MODULES.map(m=>{
+    const live=m.status==='live';
+    const tag=live?'<span class="tag tag-live">可玩</span>':'<span class="tag tag-soon">即將推出</span>';
+    const skills=(m.skills||[]).map(s=>`<span class="tag tag-skill">${s}</span>`).join('');
+    const inner=`<div class="card-icon">${m.icon}</div><h3>${m.title}</h3><p>${m.desc}</p><div class="card-meta"><div style="display:flex;gap:6px;flex-wrap:wrap">${tag}${skills}</div><span class="card-cta">${m.cta}${live?' →':''}</span></div>`;
+    return live&&m.href?`<a class="card playable" href="${m.href}">${inner}</a>`:`<div class="card soon">${inner}</div>`;
+  }).join('');
+}
+renderModules();
+</script>
+</body>
+</html>
