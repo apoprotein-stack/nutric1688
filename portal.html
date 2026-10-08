@@ -8,421 +8,428 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green: #2D6A4F;
-  --green-l: #40916C;
-  --green-p: #D8F3DC;
-  --gold: #F4A261;
-  --warm: #E76F51;
-  --bg: #F4F8F5;
-  --card: #FFFFFF;
-  --text: #1B2D27;
-  --sub: #5A7268;
-  --muted: #8FA89F;
-  --border: #D4E6DC;
-  --shadow: 0 4px 20px rgba(45,106,79,.08);
-  --shadow-h: 0 16px 48px rgba(45,106,79,.14);
-  --r: 20px;
+  --g: #1B5E45;
+  --g2: #2D8A62;
+  --g3: #E8F5EF;
+  --brain: #5B4FD6;
+  --brain2: #7C6CF0;
+  --brain-bg: #F0EEFF;
+  --gold: #E8A04A;
+  --bg: #F6F8F7;
+  --surface: #FFFFFF;
+  --ink: #12251E;
+  --ink2: #4A6358;
+  --ink3: #8A9E94;
+  --line: #DCE8E1;
+  --r: 24px;
+  --shadow: 0 2px 8px rgba(18,37,30,.04), 0 12px 32px rgba(18,37,30,.06);
+  --shadow-lg: 0 8px 40px rgba(18,37,30,.12);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
   font-family: 'Noto Sans TC', 'Inter', system-ui, sans-serif;
   background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
   min-height: 100vh;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Header */
-.site-header {
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-l) 100%);
-  padding: 0 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  box-shadow: 0 2px 20px rgba(45,106,79,.28);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+/* ── Header ── */
+.hdr {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px; padding: 0 28px;
+  background: rgba(255,255,255,.82);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--line);
 }
-.logo-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--ink);
 }
-.logo-img {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #fff;
-  padding: 3px;
-  object-fit: contain;
+.brand img {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: #fff; object-fit: contain;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
 }
-.brand-name {
-  font-family: Inter, sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: .3px;
+.brand-txt strong {
+  display: block; font-family: Inter, sans-serif;
+  font-size: 17px; font-weight: 800; letter-spacing: -.2px;
 }
-.brand-sub {
-  font-size: 11px;
-  color: rgba(255,255,255,.72);
-  margin-top: 1px;
+.brand-txt span {
+  font-size: 11px; color: var(--ink3); font-weight: 500;
 }
-.header-nav { display: flex; gap: 6px; }
-.header-link {
-  color: rgba(255,255,255,.88);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 8px;
-  transition: background .2s, color .2s;
+.nav { display: flex; gap: 4px; }
+.nav a {
+  font-size: 13px; font-weight: 600; color: var(--ink2);
+  text-decoration: none; padding: 7px 14px; border-radius: 10px;
+  transition: background .15s, color .15s;
 }
-.header-link:hover,
-.header-link:focus-visible {
-  background: rgba(255,255,255,.16);
-  color: #fff;
-  outline: none;
+.nav a:hover { background: var(--g3); color: var(--g); }
+.nav a.brain-link:hover { background: var(--brain-bg); color: var(--brain); }
+
+/* ── Main shell ── */
+.shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 36px 24px 64px;
 }
 
-/* Hero */
+/* ── Hero split ── */
 .hero {
-  position: relative;
-  padding: 72px 20px 56px;
-  text-align: center;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse 90% 70% at 50% -20%, rgba(64,145,108,.22), transparent 60%),
-    radial-gradient(ellipse 50% 40% at 85% 30%, rgba(244,162,97,.12), transparent 50%),
-    var(--bg);
-}
-.hero-badge {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 28px;
   align-items: center;
-  gap: 6px;
-  background: var(--green-p);
-  color: var(--green);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 999px;
-  margin-bottom: 20px;
-  letter-spacing: .3px;
-  animation: fadeUp .5s ease both;
+  margin-bottom: 40px;
 }
-.hero h1 {
-  font-size: clamp(30px, 5.5vw, 46px);
-  font-weight: 900;
-  line-height: 1.22;
-  margin-bottom: 16px;
-  letter-spacing: -.3px;
-  animation: fadeUp .55s .05s ease both;
+.hero-copy { padding: 12px 0; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; letter-spacing: .4px;
+  color: var(--g); background: var(--g3);
+  padding: 5px 12px; border-radius: 999px; margin-bottom: 18px;
 }
-.hero h1 span {
-  background: linear-gradient(135deg, var(--green), var(--green-l));
-  -webkit-background-clip: text;
+.hero-copy h1 {
+  font-size: clamp(28px, 4.2vw, 40px);
+  font-weight: 900; line-height: 1.2;
+  letter-spacing: -.4px; margin-bottom: 14px;
+}
+.hero-copy h1 em {
+  font-style: normal;
+  background: linear-gradient(120deg, var(--g), var(--g2));
+  -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
-.hero p {
-  font-size: 16px;
-  color: var(--sub);
-  max-width: 480px;
-  margin: 0 auto 32px;
-  line-height: 1.75;
-  animation: fadeUp .55s .1s ease both;
+.hero-copy p {
+  font-size: 15px; color: var(--ink2); max-width: 420px;
+  line-height: 1.75; margin-bottom: 28px;
 }
-.hero-cta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  animation: fadeUp .55s .15s ease both;
-}
+.cta-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 13px 24px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  transition: transform .18s, box-shadow .2s;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px; border-radius: 14px;
+  font-size: 14px; font-weight: 700; text-decoration: none;
+  font-family: inherit; border: none; cursor: pointer;
+  transition: transform .15s, box-shadow .2s;
 }
 .btn:hover { transform: translateY(-2px); }
 .btn:active { transform: translateY(0); }
-.btn:focus-visible {
-  outline: 3px solid rgba(45,106,79,.35);
-  outline-offset: 2px;
-}
-.btn-primary {
-  background: linear-gradient(135deg, var(--green), var(--green-l));
+.btn-g {
+  background: linear-gradient(135deg, var(--g), var(--g2));
   color: #fff;
-  box-shadow: 0 6px 20px rgba(45,106,79,.32);
+  box-shadow: 0 6px 20px rgba(27,94,69,.28);
 }
-.btn-primary:hover { box-shadow: 0 10px 28px rgba(45,106,79,.4); }
-.btn-secondary {
-  background: #fff;
-  color: var(--green);
-  border: 1.5px solid var(--border);
-  box-shadow: var(--shadow);
+.btn-g:hover { box-shadow: 0 10px 28px rgba(27,94,69,.36); }
+.btn-b {
+  background: linear-gradient(135deg, var(--brain), var(--brain2));
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(91,79,214,.28);
 }
-.btn-secondary:hover {
-  border-color: var(--green-l);
-  box-shadow: 0 8px 24px rgba(45,106,79,.12);
+.btn-b:hover { box-shadow: 0 10px 28px rgba(91,79,214,.36); }
+
+/* Hero visual panel */
+.hero-visual {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+  min-height: 280px;
+  background:
+    radial-gradient(ellipse 80% 70% at 20% 30%, rgba(45,138,98,.35), transparent 55%),
+    radial-gradient(ellipse 70% 60% at 80% 70%, rgba(91,79,214,.28), transparent 50%),
+    linear-gradient(160deg, #1B3D32 0%, #1A1A3A 100%);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-lg);
+}
+.hero-visual .orb {
+  position: absolute; border-radius: 50%; filter: blur(40px);
+  pointer-events: none;
+}
+.orb-1 { width: 140px; height: 140px; background: rgba(45,138,98,.5); top: 10%; left: 8%; }
+.orb-2 { width: 120px; height: 120px; background: rgba(124,108,240,.45); bottom: 12%; right: 10%; }
+.visual-inner {
+  position: relative; z-index: 1;
+  text-align: center; color: #fff; padding: 24px;
+}
+.visual-inner .icons {
+  display: flex; gap: 16px; justify-content: center; margin-bottom: 16px;
+}
+.visual-inner .icon-box {
+  width: 64px; height: 64px; border-radius: 18px;
+  display: grid; place-items: center; font-size: 28px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(8px);
+}
+.visual-inner h3 {
+  font-size: 18px; font-weight: 800; margin-bottom: 4px;
+}
+.visual-inner p {
+  font-size: 13px; color: rgba(255,255,255,.65);
 }
 
-/* Section */
-.section {
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 8px 20px 64px;
-}
-.section-label {
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  margin-bottom: 22px;
+/* ── Section label ── */
+.sec-label {
+  font-size: 12px; font-weight: 700; color: var(--ink3);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 16px;
 }
 
-/* Cards */
-.cards {
+/* ── Bento grid ── */
+.bento {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+  margin-bottom: 36px;
 }
-.feature-card {
-  background: var(--card);
+.panel {
+  background: var(--surface);
   border-radius: var(--r);
   box-shadow: var(--shadow);
-  padding: 28px 26px 24px;
-  display: flex;
-  flex-direction: column;
-  border: 1.5px solid transparent;
-  transition: transform .22s, box-shadow .25s, border-color .2s;
-  text-decoration: none;
-  color: inherit;
-  position: relative;
-  overflow: hidden;
+  border: 1px solid var(--line);
+  padding: 28px 26px;
+  display: flex; flex-direction: column;
+  text-decoration: none; color: inherit;
+  transition: transform .2s, box-shadow .25s, border-color .2s;
+  position: relative; overflow: hidden;
 }
-.feature-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--green), var(--green-l));
-  opacity: 0;
-  transition: opacity .2s;
+.panel:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-h);
-  border-color: var(--border);
+.panel-nutri { grid-row: span 2; }
+.panel-nutri:hover { border-color: rgba(45,138,98,.35); }
+.panel-brain:hover { border-color: rgba(91,79,214,.35); }
+.panel-stat {
+  flex-direction: row; align-items: center; gap: 16px;
+  padding: 22px 24px;
 }
-.feature-card:hover::after { opacity: 1; }
-.feature-card:focus-visible {
-  outline: 3px solid rgba(45,106,79,.3);
-  outline-offset: 3px;
+.panel-accent {
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
 }
-.game-card::after {
-  background: linear-gradient(90deg, var(--gold), var(--warm));
+.panel-nutri .panel-accent {
+  background: linear-gradient(90deg, var(--g), var(--g2));
 }
-.card-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  margin-bottom: 16px;
-  background: var(--green-p);
+.panel-brain .panel-accent {
+  background: linear-gradient(90deg, var(--brain), var(--brain2));
 }
-.game-card .card-icon {
-  background: linear-gradient(145deg, #FFF3E6, #FFDDD2);
+.p-icon {
+  width: 52px; height: 52px; border-radius: 16px;
+  display: grid; place-items: center; font-size: 24px;
+  margin-bottom: 18px; flex-shrink: 0;
 }
-.feature-card h2 {
-  font-size: 19px;
-  font-weight: 800;
-  margin-bottom: 8px;
+.panel-nutri .p-icon { background: var(--g3); }
+.panel-brain .p-icon { background: var(--brain-bg); }
+.panel h2 {
+  font-size: 20px; font-weight: 800; margin-bottom: 8px;
   letter-spacing: -.2px;
 }
-.feature-card p {
-  font-size: 14px;
-  color: var(--sub);
-  line-height: 1.7;
-  flex: 1;
-  margin-bottom: 18px;
+.panel p {
+  font-size: 14px; color: var(--ink2); line-height: 1.7;
+  flex: 1; margin-bottom: 18px;
 }
-.card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-}
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
 .tag {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
+  font-size: 11px; font-weight: 700; padding: 4px 10px;
   border-radius: 999px;
-  background: #F0F7F3;
-  color: var(--green);
 }
-.game-card .tag {
-  background: #FFF5EB;
-  color: #C45C26;
-}
-.card-action {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--green);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.tag-g { background: var(--g3); color: var(--g); }
+.tag-b { background: var(--brain-bg); color: var(--brain); }
+.go {
+  font-size: 14px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 4px;
   transition: gap .15s;
 }
-.feature-card:hover .card-action { gap: 8px; }
-.game-card .card-action { color: #C45C26; }
+.panel:hover .go { gap: 8px; }
+.panel-nutri .go { color: var(--g); }
+.panel-brain .go { color: var(--brain); }
 
-/* Highlights strip */
-.highlights {
+/* Stat panels */
+.stat-num {
+  font-size: 28px; font-weight: 900; line-height: 1;
+  font-family: Inter, sans-serif;
+}
+.stat-g { color: var(--g); }
+.stat-b { color: var(--brain); }
+.stat-label { font-size: 13px; color: var(--ink3); font-weight: 500; }
+
+/* ── How it works ── */
+.howto {
+  background: var(--surface);
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  padding: 28px 28px 24px;
+  margin-bottom: 40px;
+}
+.howto h2 {
+  font-size: 16px; font-weight: 800; margin-bottom: 18px;
+}
+.steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 36px;
+  gap: 14px;
 }
-.hl {
-  text-align: center;
-  padding: 18px 12px;
-  background: var(--card);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
+.step {
+  padding: 16px; border-radius: 14px;
+  background: var(--bg);
 }
-.hl b {
-  display: block;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--green);
-  margin-bottom: 4px;
+.step b {
+  display: block; font-size: 11px; font-weight: 800;
+  letter-spacing: .8px; color: var(--g); margin-bottom: 6px;
 }
-.hl span {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 500;
-}
+.step span { font-size: 13px; color: var(--ink2); }
 
-/* Footer */
-.site-footer {
-  text-align: center;
-  padding: 28px 20px 40px;
-  font-size: 13px;
-  color: var(--muted);
-  border-top: 1px solid var(--border);
+/* ── Footer ── */
+.ftr {
+  text-align: center; padding: 24px 20px 40px;
+  font-size: 13px; color: var(--ink3);
+  border-top: 1px solid var(--line);
 }
-.site-footer a {
-  color: var(--green);
-  text-decoration: none;
-  font-weight: 600;
+.ftr a {
+  color: var(--g); text-decoration: none; font-weight: 600;
 }
-.site-footer a:hover { text-decoration: underline; }
+.ftr a:hover { text-decoration: underline; }
+.ftr .sep { margin: 0 6px; color: var(--line); }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ── Responsive ── */
+@media (max-width: 820px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-visual { min-height: 200px; order: -1; }
+  .bento { grid-template-columns: 1fr; }
+  .panel-nutri { grid-row: auto; }
+  .steps { grid-template-columns: 1fr; }
 }
-
-@media (max-width: 700px) {
-  .cards { grid-template-columns: 1fr; }
-  .highlights { grid-template-columns: 1fr; gap: 10px; }
-}
-@media (max-width: 640px) {
-  .site-header { padding: 0 14px; height: 56px; }
-  .brand-name { font-size: 16px; }
-  .brand-sub { display: none; }
-  .header-link { padding: 6px 10px; font-size: 12px; }
-  .hero { padding: 44px 16px 36px; }
-  .section { padding: 4px 14px 48px; }
-  .feature-card { padding: 22px 20px 20px; }
+@media (max-width: 560px) {
+  .hdr { padding: 0 14px; height: 54px; }
+  .brand-txt span { display: none; }
+  .nav a { padding: 6px 10px; font-size: 12px; }
+  .shell { padding: 24px 14px 48px; }
+  .panel { padding: 22px 18px; }
+  .howto { padding: 20px 16px; }
 }
 </style>
 </head>
 <body>
-<header class="site-header">
-  <a class="logo-wrap" href="portal.html">
-    <img class="logo-img" src="logo.png" alt="TZ-NutriQ">
-    <div>
-      <div class="brand-name">TZ-NutriQ</div>
-      <div class="brand-sub">營養智慧 × 大腦健康</div>
+
+<header class="hdr">
+  <a class="brand" href="portal.html">
+    <img src="logo.png" alt="TZ-NutriQ">
+    <div class="brand-txt">
+      <strong>TZ-NutriQ</strong>
+      <span>營養智慧 × 大腦健康</span>
     </div>
   </a>
-  <nav class="header-nav" aria-label="主要導覽">
-    <a class="header-link" href="index.html">營養查詢</a>
-    <a class="header-link" href="sirt-game/index.html">大腦年齡</a>
+  <nav class="nav" aria-label="主要導覽">
+    <a href="index.html">營養查詢</a>
+    <a class="brain-link" href="sirt-game/index.html">大腦年齡</a>
   </nav>
 </header>
 
-<section class="hero">
-  <div class="hero-badge">🌿 健康生活從了解開始</div>
-  <h1>探索營養，<span>測試大腦</span></h1>
-  <p>整合食品營養查詢與 Brain Lab 益智小遊戲，幫助你更認識身體與當下的腦力狀態。</p>
-  <div class="hero-cta">
-    <a class="btn btn-primary" href="index.html">🥗 開始營養查詢</a>
-    <a class="btn btn-secondary" href="sirt-game/index.html">🧠 測試大腦年齡</a>
-  </div>
-</section>
+<main class="shell">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="pill">🌿 健康生活從了解開始</div>
+      <h1>探索營養，<em>測試大腦</em></h1>
+      <p>TZ-NutriQ 整合食品營養成分查詢與 Brain Lab 益智小遊戲，幫助你更認識身體與當下的腦力狀態。</p>
+      <div class="cta-row">
+        <a class="btn btn-g" href="index.html">🥗 開始營養查詢</a>
+        <a class="btn btn-b" href="sirt-game/index.html">🧠 測試大腦年齡</a>
+      </div>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="visual-inner">
+        <div class="icons">
+          <div class="icon-box">🥗</div>
+          <div class="icon-box">🧠</div>
+        </div>
+        <h3>一站雙核心</h3>
+        <p>營養數據 × 認知訓練</p>
+      </div>
+    </div>
+  </section>
 
-<section class="section">
-  <div class="section-label">選擇功能</div>
-  <div class="cards">
-    <a class="feature-card" href="index.html">
-      <div class="card-icon">🥗</div>
+  <!-- Bento -->
+  <div class="sec-label">選擇功能</div>
+  <div class="bento">
+    <a class="panel panel-nutri" href="index.html">
+      <div class="panel-accent"></div>
+      <div class="p-icon">🥗</div>
       <h2>食品營養查詢</h2>
-      <p>查詢單品營養、國人膳食參考攝取量，並支援配方熱量逆推與圖表視覺化。</p>
-      <div class="card-meta">
-        <span class="tag">單品查詢</span>
-        <span class="tag">國人標準</span>
-        <span class="tag">配方逆推</span>
+      <p>查詢單品營養、國人膳食參考攝取量，並支援配方熱量逆推與圖表視覺化分析。</p>
+      <div class="tags">
+        <span class="tag tag-g">單品查詢</span>
+        <span class="tag tag-g">國人標準</span>
+        <span class="tag tag-g">配方逆推</span>
       </div>
-      <span class="card-action">進入營養工具 →</span>
+      <span class="go">進入營養工具 →</span>
     </a>
-    <a class="feature-card game-card" href="sirt-game/index.html">
-      <div class="card-icon">🧠</div>
-      <h2>小遊戲・測試大腦年齡</h2>
-      <p>進入 Brain Lab：麻將消除、2048 等益智模組，訓練空間推理、觀察力與工作記憶。</p>
-      <div class="card-meta">
-        <span class="tag">麻將消除</span>
-        <span class="tag">2048</span>
-        <span class="tag">可擴充</span>
+
+    <a class="panel panel-brain" href="sirt-game/index.html">
+      <div class="panel-accent"></div>
+      <div class="p-icon">🧠</div>
+      <h2>小遊戲・大腦年齡</h2>
+      <p>麻將消除、2048 等益智模組，訓練空間推理、觀察力與工作記憶。</p>
+      <div class="tags">
+        <span class="tag tag-b">麻將消除</span>
+        <span class="tag tag-b">2048</span>
+        <span class="tag tag-b">可擴充</span>
       </div>
-      <span class="card-action">開始挑戰 →</span>
+      <span class="go">開始挑戰 →</span>
     </a>
+
+    <div class="panel panel-stat">
+      <div>
+        <div class="stat-num stat-g">3</div>
+        <div class="stat-label">營養查詢模組</div>
+      </div>
+      <div style="width:1px;height:36px;background:var(--line)"></div>
+      <div>
+        <div class="stat-num stat-b">2</div>
+        <div class="stat-label">已上線遊戲</div>
+      </div>
+      <div style="width:1px;height:36px;background:var(--line)"></div>
+      <div>
+        <div class="stat-num" style="color:var(--gold)">0</div>
+        <div class="stat-label">註冊即可用</div>
+      </div>
+    </div>
   </div>
 
-  <div class="highlights">
-    <div class="hl"><b>3</b><span>營養查詢模組</span></div>
-    <div class="hl"><b>2</b><span>已上線益智遊戲</span></div>
-    <div class="hl"><b>0</b><span>註冊即可使用</span></div>
+  <!-- How -->
+  <div class="howto">
+    <h2>怎麼開始？</h2>
+    <div class="steps">
+      <div class="step">
+        <b>STEP 1</b>
+        <span>從上方選擇「營養查詢」或「大腦年齡」</span>
+      </div>
+      <div class="step">
+        <b>STEP 2</b>
+        <span>查營養數據，或完成一局益智挑戰</span>
+      </div>
+      <div class="step">
+        <b>STEP 3</b>
+        <span>用數據與分數，更了解身體與腦力狀態</span>
+      </div>
+    </div>
   </div>
-</section>
+</main>
 
-<footer class="site-footer">
+<footer class="ftr">
   <p>TZ-NutriQ — 營養資訊與認知趣味工具，非正式醫療診斷。</p>
-  <p style="margin-top:8px">
-    <a href="index.html">營養查詢</a> ·
+  <p style="margin-top:10px">
+    <a href="index.html">營養查詢</a><span class="sep">·</span>
     <a href="sirt-game/index.html">大腦年齡</a>
   </p>
 </footer>
+
 </body>
 </html>
